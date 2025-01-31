@@ -175,12 +175,12 @@ onUnmounted(() => {
                         <span class="menu-title" :class="{ 'title-expanded': isExpanded }">意见反馈</span>
                     </div>
                     <div class="menu-item" @click="doLike()">
-                        <a-tooltip title="赞赏插件" placement="right">
+                        <a-tooltip title="开源共建" placement="right">
                             <div class="icon-wrapper">
                                 <GiftOutlined/>
                             </div>
                         </a-tooltip>
-                        <span class="menu-title" :class="{ 'title-expanded': isExpanded }">赞赏插件</span>
+                        <span class="menu-title" :class="{ 'title-expanded': isExpanded }">开源共建</span>
                     </div>
                 </div>
                 <div class="expand-button" @click="toggleExpand">
