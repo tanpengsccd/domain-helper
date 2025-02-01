@@ -5,14 +5,21 @@ import {containsAnySubstring} from "@/utils/tool";
 const renewLink = "https://www.spaceship.com/zh/application/domain-list-application/"
 
 
-// https://docs.spaceship.dev/#tag/DnsRecords
-
 class SpaceshipDnsService {
+
+
     constructor(apiKey, apiSecret) {
         this.apiKey = apiKey;
         this.apiSecret = apiSecret;
         this.apiBase = 'spaceship.dev';
         this.dnsServer = ["spaceship"]
+        this.type2ValueNameMap = {
+            "A": "address",
+            "AAAA": "address",
+            "TXT": "value",
+            "CNAME": "cname",
+            "NS": "nameserver",
+        }
     }
 
     async listDomains() {
@@ -50,58 +57,69 @@ class SpaceshipDnsService {
         while (true) {
             const action = `api/v1/dns/records/${domain}?take=${pageSize}&skip=${offset}`;
             const res = await this._spaceshopRest(action, 'GET');
-            console.log(typeof res)
-            console.log(res)
-            break;
-            // if (detail) {
-            //     throw new Error(detail)
-            // }
-            // console.log(total, items);
-            // if (total === 0) {
-            //     break;
-            // }
-            // records = records.concat(items);
-            // if (total < (pageSize + offset)) {
-            //     break;
-            // }
-            // offset += pageSize;
-        }
-        console.log(records);
-        return records.map(item => {
-            return {
-                RecordId: `${item.type}##${item.name}`,
-                Remark: "",
-                Name: item.name,
-                Type: item.type,
-                TTL: item.ttl,
-                Value: item.data,
+            const {total, items} = res;
+            if (total === 0) {
+                break;
             }
-        });
+            records = records.concat(items);
+            if (total < (pageSize + offset)) {
+                break;
+            }
+            offset += pageSize;
+        }
+        return {
+            count: records.length,
+            list: records.map(item => {
+                return {
+                    RecordId: `${item.type}##${item.name}`,
+                    Name: item.name,
+                    Type: item.type,
+                    TTL: item.ttl,
+                    Value: item[this.type2ValueNameMap[item.type]]
+                }
+            })
+        }
     }
 
     async addRecord(domain, record) {
-        const action = `api/v1/domains/${domain}/records`;
-        const payload = JSON.stringify([{
+        const action = `api/v1/dns/records/${domain}`;
+        const item = {
             type: record.type,
             name: record.name,
-            data: record.value,
             ttl: record.ttl
-        }]);
-        return this._spaceshopRest(action, 'POST', payload);
-    }
+        }
+        item[this.type2ValueNameMap[record.type]] = record.value;
 
-    async updateRecord(domain, record) {
-        const action = `api/v1/domains/${domain}/records/${record.type}/${record.name}`;
+
         const payload = JSON.stringify({
-            data: record.value,
-            ttl: record.ttl
+            force: true,
+            items: [item]
         });
-        return this._spaceshopRest(action, 'PUT', payload);
+        const {detail, data} = await this._spaceshopRest(action, 'PUT', payload);
+        if (detail) {
+            throw new Error(data[0]?.details || detail);
+        }
     }
 
-    async deleteRecord(domain, recordType, recordName) {
-        const action = `api/v1/domains/${domain}/records/${recordType}/${recordName}`;
-        return this._spaceshopRest(action, 'DELETE');
+    async deleteRecord(domain, RecordId, record = null) {
+
+        // 遗留问题，没想到删除的操作还有不用id的 是我见识短浅了
+
+        if (null === record) {
+           record = (await this.listRecords(domain)).list.find(item => item.RecordId === RecordId);
+        }
+
+        const action = `api/v1/dns/records/${domain}`;
+        const item = {
+            type: record.Type,
+            name: record.Name,
+        }
+        item[this.type2ValueNameMap[record.Type]] = record.Value;
+        const payload = JSON.stringify([item]);
+        const {detail, data} = await this._spaceshopRest(action, "DELETE", payload);
+        if (detail) {
+            throw new Error(data[0]?.details || detail);
+        }
     }
 
     _spaceshopRest(action, method, payload = null) {
@@ -115,9 +133,6 @@ class SpaceshipDnsService {
                 'Content-Type': 'application/json'
             }
         };
-        // options.agent = new xhttps.Agent(
-        //     {proxy: 'http://127.0.0.1:10809'}
-        // );
         return httpsRequest(options, payload, true);
     }
 }

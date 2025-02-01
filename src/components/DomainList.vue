@@ -411,7 +411,9 @@ const filteredDomains = computed(() => {
                          :scroll="{ y: 'calc(100vh - 118px)' }" :sticky="{ offsetHeader: 0 }" @row-click="chooseDomain">
                     <template #bodyCell="{ column, record }">
                         <template v-if="column.key === 'cloud'">
-                            <img :src="record.cloud_info.icon" alt="" style="height: 17px;">
+                            <div style="text-align: center">
+                                <img :src="record.cloud_info.icon" alt="" style="height: 17px;">
+                            </div>
                         </template>
                         <template v-else-if="column.key === 'expire_time'">
                             <a-tooltip

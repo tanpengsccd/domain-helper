@@ -20,6 +20,76 @@ const DNS_PROVIDER = {
     "west": WestDnsService,
 }
 
+
+function validateDNSRecord(type, value) {
+    /**
+     * 验证DNS记录是否合法
+     * @param {string} type - DNS记录类型 ('A', 'AAAA', 'TXT', 'NS', 'CNAME')
+     * @param {string} value - DNS记录的值
+     * @throws {Error} - 如果记录不合法，抛出异常并说明原因
+     */
+
+    if (type === "A") {
+        // 验证IPv4地址
+        if (!isValidIPv4(value)) {
+            throw new Error(`Invalid A record: '${value}' is not a valid IPv4 address.`);
+        }
+    } else if (type === "AAAA") {
+        // 验证IPv6地址
+        if (!isValidIPv6(value)) {
+            throw new Error(`Invalid AAAA record: '${value}' is not a valid IPv6 address.`);
+        }
+    } else if (type === "TXT") {
+        // 验证TXT记录 (通常为任意字符串，假设长度不超过255个字符)
+        if (typeof value !== "string" || value.length > 255) {
+            throw new Error(`Invalid TXT record: '${value}' must be a string of at most 255 characters.`);
+        }
+    } else if (type === "NS" || type === "CNAME") {
+        // 验证NS和CNAME记录 (通常为有效的域名)
+        if (!isValidHostname(value)) {
+            throw new Error(`Invalid ${type} record: '${value}' is not a valid hostname.`);
+        }
+    } else {
+        // 不支持的类型
+        throw new Error(`Unsupported DNS record type: '${type}'. Supported types are A, AAAA, TXT, NS, CNAME.`);
+    }
+}
+
+function isValidIPv4(ip) {
+    /**
+     * 验证IPv4地址是否合法
+     * @param {string} ip - IPv4地址
+     * @returns {boolean}
+     */
+    const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])(\.(25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9]?[0-9])){3}$/;
+    return ipv4Regex.test(ip);
+}
+
+function isValidIPv6(ip) {
+    /**
+     * 验证IPv6地址是否合法
+     * @param {string} ip - IPv6地址
+     * @returns {boolean}
+     */
+    const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/;
+    return ipv6Regex.test(ip);
+}
+
+function isValidHostname(hostname) {
+    /**
+     * 验证域名是否合法
+     * @param {string} hostname - 要验证的域名
+     * @returns {boolean}
+     */
+    if (hostname.length > 255) return false;
+    if (hostname.endsWith(".")) {
+        hostname = hostname.slice(0, -1); // 移除末尾的点
+    }
+    const hostnameRegex = /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$/;
+    return hostname.split(".").every((part) => hostnameRegex.test(part));
+}
+
+
 export function getDnsService(key, provider, credentials, refresh = false) {
     if (refresh) {
         if (DNS_MAP_SERVICE[key]) {
@@ -85,10 +155,20 @@ class DnsService {
     }
 
     async addRecord(domain, record) {
+        if (typeof this.provider.validateDNSRecord === 'function') {
+            this.provider.validateDNSRecord(record.Type, record.Value);
+        } else {
+            validateDNSRecord(record.type, record.value);
+        }
         return this.provider.addRecord(domain, record);
     }
 
     async updateRecord(domain, record) {
+        if (typeof this.provider.validateDNSRecord === 'function') {
+            this.provider.validateDNSRecord(record.type, record.value);
+        } else {
+            validateDNSRecord(record.type, record.value);
+        }
         // 原始类有这个方法 则调用 ，没有则先删除再添加
         if (typeof this.provider.updateRecord === 'function') {
             return this.provider.updateRecord(domain, record);
@@ -99,8 +179,9 @@ class DnsService {
 
     }
 
-    async deleteRecord(domain, record) {
-        return this.provider.deleteRecord(domain, record);
+    async deleteRecord(domain, recordId, record) {
+        // 传了record 又传了recordId 这就是屎山代码的由来，见识短了 以为所有平台都有id
+        return this.provider.deleteRecord(domain, recordId, record);
     }
 
     async xDestroy() {
@@ -111,7 +192,7 @@ class DnsService {
 
     // 删除所有 _acme-challenge 记录
     async deleteAcmeRecord(domain, acmeDomain) {
-       const target = `_acme-challenge.${acmeDomain}`.replace(`.${domain}`, "")
+        const target = `_acme-challenge.${acmeDomain}`.replace(`.${domain}`, "")
         // 列出所有域名
         return this.listRecords(domain).then(res => {
             // 找到所有 _acme-challenge 记录
@@ -122,6 +203,7 @@ class DnsService {
             return Promise.all(acmeRecords.map(item => this.deleteRecord(domain, item.RecordId)));
         });
     }
+
     async changeRecordStatus(domain, recordId, extra = {}) {
         if (typeof this.provider.changeRecordStatus === 'function') {
             return this.provider.changeRecordStatus(domain, recordId, extra);

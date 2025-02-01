@@ -11,6 +11,12 @@ export function httpsRequest(options, data, json = false, ext = {
         httpReq = http;
     }
     return new Promise((resolve, reject) => {
+
+        // 如果请求方法是DELETE 并且有body，需要设置Content-Length
+        if (options.method.toUpperCase() === 'DELETE' && data) {
+            options.headers['Content-Length'] = xBuffer.byteLength(data);
+        }
+
         const req = httpReq.request({...options, timeout: 10000}, (res) => {
             const charset = getCharset(res.headers['content-type']);
             const chunks = [];
@@ -65,6 +71,10 @@ export function httpsRequestWithResponseHeader(options, data, ext = {
         httpReq = http;
     }
     return new Promise((resolve, reject) => {
+        // 如果请求方法是DELETE 并且有body，需要设置Content-Length
+        if (options.method.toUpperCase() === 'DELETE' && data) {
+            options.headers['Content-Length'] = xBuffer.byteLength(data);
+        }
         const req = httpReq.request({...options, timeout: 5000}, (res) => {
             const charset = getCharset(res.headers['content-type']);
             const chunks = [];

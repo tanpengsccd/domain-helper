@@ -155,7 +155,7 @@ const handleOk = () => {
                     placeholder="记录值"
                 ></a-auto-complete>
             </a-form-item>
-            <a-form-item label="　　备注" v-if="!['aws', 'west'].includes(domainInfo.cloud)">
+            <a-form-item label="　　备注" v-if="!['aws', 'west', 'spaceship'].includes(domainInfo.cloud)">
                 <a-input v-model:value="form.Remark" placeholder="备注"></a-input>
             </a-form-item>
             <a-form-item label="开启代理" v-if="domainInfo.cloud === 'cloudflare'">

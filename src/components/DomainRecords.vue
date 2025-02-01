@@ -19,6 +19,7 @@ import {useThemeStore} from '@/stroes/themeStore.js';
 import {addSslMonitor, batchAddSslMonitorLogic, getAllSslMonitor} from "@/utils/sslMonitor";
 import router from "@/router";
 import {ArrayUtils} from "@/utils/ArrayUtils";
+
 const themeStore = useThemeStore();
 
 const colorPrimary = computed(() => themeStore.themeColor);
@@ -112,6 +113,7 @@ const getAllMonitorRecords = () => {
 }
 
 const refreshRecords = () => {
+    selectedRecords.value = []
     getAllMonitorRecords()
     const dbsService = getDnsService(nowDomainInfo.value.account_key, nowDomainInfo.value.cloud, nowDomainInfo.value.account_info.tokens)
     loading.value = true
@@ -183,8 +185,13 @@ const createSsl = (record) => {
 }
 
 const deleteRecord = (record) => {
-    deleteNowRecord.RecordId = record.RecordId
-    deleteNowRecord.Name = record.Name
+    Object.assign(deleteNowRecord, {
+        RecordId: record.RecordId,
+        Name: record.Name,
+        Value: record.Value,
+        TTL: record.TTL,
+        Type: record.Type
+    });
     Modal.confirm({
         title: '删除记录',
         icon: createVNode(ExclamationCircleOutlined),
@@ -205,11 +212,14 @@ const deleteRecord = (record) => {
 const deleteNowRecord = reactive({
     RecordId: "",
     Name: "",
+    Value: "",
+    TTL: 0,
+    Type: "",
 })
 const deleteRecordDo = () => {
     loading.value = true
     const dbsService = getDnsService(nowDomainInfo.value.account_key, nowDomainInfo.value.cloud, nowDomainInfo.value.account_info.tokens)
-    dbsService.deleteRecord(nowDomainInfo.value.domain, deleteNowRecord.RecordId).then(r => {
+    dbsService.deleteRecord(nowDomainInfo.value.domain, deleteNowRecord.RecordId, deleteNowRecord).then(r => {
         message.success(`记录 ${deleteNowRecord.Name} 删除成功`);
         initRecords(nowDomainInfo.value)
     }).catch(e => {
@@ -447,7 +457,7 @@ const batchDelete = () => {
         onOk: () => {
             loading.value = true
             const dnsService = getDnsService(nowDomainInfo.value.account_key, nowDomainInfo.value.cloud, nowDomainInfo.value.account_info.tokens)
-            Promise.all(selectedRecords.value.map(i => dnsService.deleteRecord(nowDomainInfo.value.domain, i.RecordId))).then(r => {
+            Promise.all(selectedRecords.value.map(i => dnsService.deleteRecord(nowDomainInfo.value.domain, i.RecordId, i))).then(r => {
                 message.success(`记录 ${selectedRecords.value.map(i => i.Name).join(", ")} 删除成功`);
                 refreshRecords()
             }).catch(e => {

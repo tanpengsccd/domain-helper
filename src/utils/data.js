@@ -5,7 +5,7 @@ import huaweiLogo from "@/assets/cloud/huawei.png";
 import awslogo from "@/assets/cloud/aws.png";
 import volcengineLogo from "@/assets/cloud/volcengine.png";
 import westLogo from "@/assets/cloud/west.png";
-// import spaceshipLogo from "@/assets/cloud/spaceship.png";
+import spaceshipLogo from "@/assets/cloud/spaceship.png";
 
 export const cloudsData = [
     {
@@ -220,23 +220,23 @@ export const cloudsData = [
             }
         ]
     },
-    // {
-    //     name: "",
-    //     title: "spaceship",
-    //     key: "spaceship",
-    //     icon: spaceshipLogo,
-    //     color: "#394EFF",
-    //     tokens: [
-    //         {
-    //             key: "Key",
-    //             value: ""
-    //         },
-    //         {
-    //             key: "Secret",
-    //             value: ""
-    //         }
-    //     ]
-    // }
+    {
+        name: "",
+        title: "spaceship",
+        key: "spaceship",
+        icon: spaceshipLogo,
+        color: "#394EFF",
+        tokens: [
+            {
+                key: "Key",
+                value: ""
+            },
+            {
+                key: "Secret",
+                value: ""
+            }
+        ]
+    }
 ]
 //  "MX" 记录搁置
 export const RecordTypes = [

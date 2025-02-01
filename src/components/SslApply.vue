@@ -824,7 +824,7 @@ const targetDomains = computed(() => {
                     {{ new Date(sslInfo?.validTo).toLocaleString() }}
                 </div>
                 <div>此证书可用于以下域名</div>
-                <p :style="{color: colorPrimary}" v-for="(d, i) in sslInfo.subdomain.split(',')" :key="i">{{ d }}</p>
+                <div :style="{color: colorPrimary}" v-for="(d, i) in sslInfo.subdomain.split(',')" :key="i">{{ d }}</div>
                 <span>cert为证书文件，key为私钥文件</span>
                 <span>部署使用这两个文件即可</span>
                 <span>可在证书管理中查看申请记录</span>

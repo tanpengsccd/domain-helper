@@ -81,11 +81,6 @@ class WestDnsService {
             ttl: 900,
             level: 10
         });
-        console.log({
-            ...record,
-            ttl: 900,
-            level: 10
-        })
         await this.deleteRecord(domain, id);
     }
 

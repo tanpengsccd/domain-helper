@@ -228,13 +228,13 @@ const init = () => {
                                  placeholder="请输入主机IP或域名"/>
                     </a-form-item>
                     <a-form-item label="证书路径">
-                        <a-input v-model:value="paltformInfo.config.certPath" placeholder="证书存放路径"/>
+                        <a-input v-model:value="paltformInfo.config.certPath" placeholder="证书存放路径，具体到文件"/>
                     </a-form-item>
                     <a-form-item label="私钥路径">
-                        <a-input v-model:value="paltformInfo.config.keyPath" placeholder="私钥存放路径"/>
+                        <a-input v-model:value="paltformInfo.config.keyPath" placeholder="私钥存放路径，具体到文件"/>
                     </a-form-item>
-                    <a-form-item label="重启命令">
-                        <a-input v-model:value="paltformInfo.config.restartCommand" placeholder="重启命令"/>
+                    <a-form-item label="执行操作">
+                        <a-input v-model:value="paltformInfo.config.restartCommand" placeholder="执行操作"/>
                     </a-form-item>
                 </template>
             </a-form>
