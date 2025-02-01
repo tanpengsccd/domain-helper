@@ -1,7 +1,7 @@
 ## 域名助手 - uTools插件
 
 <div align="center">
-    <img src="logo.png" alt="Domain Hero Logo" width="200"/>
+    <img src="logo.png" alt="Domain Helper Logo" width="200"/>
 </div>
 
 ### 简介 📝
