@@ -26,6 +26,11 @@
   - 阿里云
   - 腾讯云
   - 华为云
+  - 西部数据
+  - 火山引擎
+  - Cloudflare
+  - AWS
+  - SpaceShip
   - 更多平台持续添加中...
 
 ### TODO List 📋
