@@ -238,6 +238,14 @@ const init = () => {
                         <a-input v-model:value="paltformInfo.config.restartCommand" placeholder="执行操作"/>
                     </a-form-item>
                 </template>
+                <template v-if="paltformInfo.platform_type === 'qiniu'">
+                    <a-form-item label="CDN域名">
+                        <a-input v-model:value="paltformInfo.config.cdnDomain" placeholder="[选填] CDN域名"/>
+                        <div style="margin-top: 4px; color: rgba(0,0,0,0.45); font-size: 12px">
+                            如果设置了该值，会尝试将证书直接绑定到该域名上
+                        </div>
+                    </a-form-item>
+                </template>
             </a-form>
 
             <div v-else>
@@ -261,8 +269,8 @@ const init = () => {
 
             <a-space direction="vertical">
                 <div>证书已成功推送到 <span :style="{ color: colorPrimary }">{{ paltformInfo.tag }}</span></div>
-                 <template v-if="paltformInfo.platform_type === 'qiniu'">
-                    <a-typography-text>{{pushRes.msg}}</a-typography-text>
+                <template v-if="paltformInfo.platform_type === 'qiniu'">
+                    <a-typography-text>{{ pushRes.msg }}</a-typography-text>
                 </template>
                 <template v-if="paltformInfo.platform_type === 'ssh'">
                     <a-typography-text>证书文件路径: {{ paltformInfo.config?.certPath }}</a-typography-text>

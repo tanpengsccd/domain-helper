@@ -501,7 +501,7 @@ const handleImportChange = (value) => {
                         <a-input-password v-model:value="form.config.secretKey" placeholder="七牛云 SecretKey"/>
                     </a-form-item>
                     <a-form-item label="CDN域名">
-                        <a-input v-model:value="form.config.cdnDomain" placeholder="可选，如需自动绑定CDN域名请填写"/>
+                        <a-input extra="" v-model:value="form.config.cdnDomain" placeholder="可选，如需自动绑定CDN域名请填写"/>
                         <div style="margin-top: 4px; color: rgba(0,0,0,0.45); font-size: 12px">
                             如果填写了CDN域名，证书会自动绑定到该域名，否则只会上传到证书管理
                         </div>
