@@ -21,7 +21,7 @@ const platform_types = reactive({
     'ssh': {
         key: "ssh",
         name: "SSH",
-        color: "",
+        color: "#000",
         title: "SSH推送到服务器",
     },
     'qiniu': {

@@ -165,7 +165,7 @@ export class QiniuPushStrategy extends IPushStrategy {
                             throw new Error(`开启https失败: ${error}`);
                         }
                     }
-                    bindMsg = `证书成功绑定到CDN域名 ${config.cdnDomain} 🎉🎉`;
+                    bindMsg = `证书成功绑定到CDN域名 <span style="color: #52c41a;font-weight: 500;">${config.cdnDomain}</span> 🎉🎉`;
                     oncall && oncall('bindCdn', {
                         msg: bindMsg
                     })
@@ -179,7 +179,8 @@ export class QiniuPushStrategy extends IPushStrategy {
 
             oncall && oncall('success', {msg: `推送成功 证书ID: ${res.certID}`});
             return {
-                msg: `推送成功 证书ID: ${res.certID}` + (bindMsg ? `<br> ${bindMsg}` : ''),
+                msg: `推送成功 证书ID: <span style="color: #1890ff;font-weight: bold;">${res.certID}</span>` +
+                     (bindMsg ? `<br><br>${bindMsg}` : ''),
                 extData: res
             };
         } catch (error) {
