@@ -56,6 +56,8 @@ onBeforeUnmount(() => {
     proxy.$eventBus.off("open-ssl-push", openModal)
 })
 
+const pushRes = ref(null);
+
 function randomInRange(min, max) {
     return Math.random() * (max - min) + min;
 }
@@ -112,25 +114,24 @@ const handleOk = async () => {
         const pushService = PushServiceFactory.getService(paltformInfo.platform_type);
 
         await pushService.validate(paltformInfo.config);
-        await pushService.push(paltformInfo.config, {
+        pushRes.value = await pushService.push(paltformInfo.config, {
             cert: sslInfo.value.cert,
             key: sslInfo.value.key,
-        }, (msg) => {
-            switch (msg) {
+        }, (type, extData) => {
+            console.log(type, extData);
+            switch (type) {
                 case "connected":
-                    steps.value.push('连接服务器成功 🎉');
-                    break;
                 case "beforePush":
-                    steps.value.push('开始推送证书文件');
-                    break;
                 case "afterPush":
-                    steps.value.push('证书文件推送成功 🎉');
-                    break
                 case "beforeCommand":
-                    steps.value.push('开始执行命令');
-                    break;
                 case "afterCommand":
-                    steps.value.push('命令执行成功 🎉');
+                    steps.value.push(extData.msg);
+                    break;
+                case "error":
+                    steps.value.push(`❌ ${extData.msg}`);
+                    break;
+                case "success":
+                    steps.value.push(`✅ ${extData.msg}`);
                     break;
             }
         })
@@ -260,8 +261,13 @@ const init = () => {
 
             <a-space direction="vertical">
                 <div>证书已成功推送到 <span :style="{ color: colorPrimary }">{{ paltformInfo.tag }}</span></div>
-                <a-typography-text>证书文件路径: {{ paltformInfo.config?.certPath }}</a-typography-text>
-                <a-typography-text>私钥文件路径: {{ paltformInfo.config?.keyPath }} </a-typography-text>
+                 <template v-if="paltformInfo.platform_type === 'qiniu'">
+                    <a-typography-text>{{pushRes.msg}}</a-typography-text>
+                </template>
+                <template v-if="paltformInfo.platform_type === 'ssh'">
+                    <a-typography-text>证书文件路径: {{ paltformInfo.config?.certPath }}</a-typography-text>
+                    <a-typography-text>私钥文件路径: {{ paltformInfo.config?.keyPath }}</a-typography-text>
+                </template>
             </a-space>
         </a-modal>
     </div>

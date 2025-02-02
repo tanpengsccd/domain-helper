@@ -28,36 +28,21 @@ export class SSHPushStrategy extends IPushStrategy {
         try {
             // 连接服务器
             await this.validate(config);
-            oncall && oncall('connected');
+            oncall && oncall('connected', {msg: '连接服务器成功 🎉'});
             const sftp = await this.ssh.requestSFTP();
-
-            // const namePrefix = "utools_dh_" + randomString(8);
-            //
-            // // 创建临时证书文件
-            // const certPath = await xWriteTempFile(`${namePrefix}_cert.pem`, certData.cert)
-            // const keyPath = await xWriteTempFile(`${namePrefix}_key.pem`, certData.key)
-
-
-            oncall && oncall('beforePush');
-            // console.log('certPath', certPath)
-            // console.log('keyPath', keyPath)
+            oncall && oncall('beforePush', {msg: '开始推送证书文件'});
             await this.writeContentToFile(sftp, certData.cert, config.certPath);
             await this.writeContentToFile(sftp, certData.key, config.keyPath);
 
-            // // // 上传证书文件
-            // await this.ssh.putFile(certPath, config.certPath);
-            // await this.ssh.putFile(keyPath, config.keyPath);
-            // await xDeleteTempFile(certPath)
-            // await xDeleteTempFile(keyPath)
-            oncall && oncall('afterPush');
+            oncall && oncall('afterPush', {msg: '证书文件推送成功 🎉'});
 
             // 执行重启命令
             if (config.restartCommand) {
-                oncall && oncall('beforeCommand');
+                oncall && oncall('beforeCommand', '开始执行命令');
                 await this.ssh.execCommand(config.restartCommand);
-                oncall && oncall('afterCommand');
+                oncall && oncall('afterCommand', '命令执行成功 🎉');
             }
-
+            oncall && oncall('success', '证书推送完成 🎉');
             await this.ssh.dispose();
             return true;
         } catch (error) {

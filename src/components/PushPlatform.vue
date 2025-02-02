@@ -17,12 +17,20 @@ const keySwitch = ref(false);
 const isEdit = ref(false);
 
 
-const platform_types = ref([
-    {
+const platform_types = reactive({
+    'ssh': {
         key: "ssh",
+        name: "SSH",
+        color: "",
         title: "SSH推送到服务器",
+    },
+    'qiniu': {
+        key: "qiniu",
+        name: "七牛云",
+        color: "#00AAE7",
+        title: "七牛云平台",
     }
-]);
+});
 
 const form = reactive({
     _id: null,
@@ -51,6 +59,10 @@ const filterPushplatform = computed(() => {
     });
 });
 
+const getPushplatformInfo = (type, key = null) => {
+    return key ? platform_types[type][key] : platform_types[type];
+};
+
 const changeCloud = (type) => {
     form.platform_type = type;
     switch (type) {
@@ -66,6 +78,13 @@ const changeCloud = (type) => {
                 restartCommand: ""
             };
             authType.value = 'password';
+            break;
+        case 'qiniu':
+            form.config = {
+                accessKey: "",
+                secretKey: "",
+                cdnDomain: ""  // 可选
+            };
             break;
     }
 };
@@ -153,10 +172,18 @@ const saveSetting = async () => {
         return;
     }
 
-    if (!form.config.host || !form.config.username ||
-        (!form.config.password && !form.config.privateKey)) {
-        message.error("请填写完整的连接信息");
-        return;
+    // 根据不同平台类型验证
+    if (form.platform_type === 'ssh') {
+        if (!form.config.host || !form.config.username ||
+            (!form.config.password && !form.config.privateKey)) {
+            message.error("请填写完整的SSH连接信息");
+            return;
+        }
+    } else if (form.platform_type === 'qiniu') {
+        if (!form.config.accessKey || !form.config.secretKey) {
+            message.error("请填写七牛云的 AccessKey 和 SecretKey");
+            return;
+        }
     }
 
     saveLoading.value = true;
@@ -201,7 +228,7 @@ const deletePushPlatform = (item) => {
         content: h('div', null, [
             h('div', {style: {margin: '10px 0'}}, [
                 '确定删除 ',
-                h('span', {style: {color: token.colorPrimary}}, `${item.platform_type.toUpperCase()}-${item.tag}`),
+                h('span', {style: {color: token.colorPrimary}}, `${getPushplatformInfo(item.platform_type, "name")}-${item.tag}`),
                 ' 吗?'
             ]),
             h('div', {style: {color: token.colorTextSecondary}}, '删除前请确保没有域名使用此推送平台')
@@ -243,7 +270,7 @@ const deletePushPlatformDo = (item) => {
 
     try {
         utools.dbStorage.removeItem(item._id);
-        message.success(`${item.platform_type.toUpperCase()}-${item.tag} 删除成功`);
+        message.success(`${getPushplatformInfo(item.platform_type, "name")}-${item.tag} 删除成功`);
         refreshPushplatform();
     } catch (error) {
         message.error('删除失败：' + error.message);
@@ -315,7 +342,9 @@ const handleImportChange = (value) => {
                 <template #title>
                     <a-flex align="center" justify="space-between" gap="4">
                         <a-flex align="center" gap="8">
-                            <a-tag>{{ item.platform_type.toUpperCase() }}</a-tag>
+                            <a-tag :color="getPushplatformInfo(item.platform_type,'color')">
+                                {{ getPushplatformInfo(item.platform_type, "name") }}
+                            </a-tag>
                             <span class="platform-tag">{{ item.tag }}</span>
                         </a-flex>
                         <a-space :size="10">
@@ -365,6 +394,22 @@ const handleImportChange = (value) => {
                             </a-typography-text>
                         </a-space>
                     </template>
+
+                    <!-- 七牛云类型显示信息 -->
+                    <template v-if="item.platform_type === 'qiniu'">
+                        <a-space>
+                            <div class="key">AccessKey:</div>
+                            <a-typography-text class="value">{{ hideKey(item.config.accessKey) }}</a-typography-text>
+                        </a-space>
+                        <a-space>
+                            <div class="key">SecretKey:</div>
+                            <a-typography-text class="value">{{ hideKey(item.config.secretKey) }}</a-typography-text>
+                        </a-space>
+                        <a-space v-if="item.config.cdnDomain">
+                            <div class="key">CDN域名:</div>
+                            <a-typography-text class="value">{{ item.config.cdnDomain }}</a-typography-text>
+                        </a-space>
+                    </template>
                 </a-space>
             </a-card>
 
@@ -391,7 +436,7 @@ const handleImportChange = (value) => {
                               style="width: 100%"
                               @change="handleImportChange" allowClear>
                         <a-select-option v-for="item in allPushplatform" :key="item._id" :value="item._id">
-                            {{ item.platform_type.toUpperCase() }} - {{ item.tag }}
+                            {{ getPushplatformInfo(item.platform_type, "name") }} - {{ item.tag }}
                         </a-select-option>
                     </a-select>
                     <div style="margin-top: 4px; color: rgba(0,0,0,0.45); font-size: 12px">
@@ -400,7 +445,7 @@ const handleImportChange = (value) => {
                 </a-form-item>
                 <a-form-item label="选择类型">
                     <a-select v-model:value="form.platform_type" @change="changeCloud" style="width: 100%">
-                        <a-select-option :value="i.key" v-for="i in platform_types" :key="i.key">
+                        <a-select-option :value="i.key" v-for="i of platform_types" :key="i.key">
                             <a-space>
                                 {{ i.title }}
                             </a-space>
@@ -444,6 +489,22 @@ const handleImportChange = (value) => {
                     <a-form-item label="执行操作">
                         <a-textarea v-model:value="form.config.restartCommand"
                                     placeholder="更新证书后的操作， 例 nginx -s reload"/>
+                    </a-form-item>
+                </template>
+
+                <!-- 七牛云配置表单 -->
+                <template v-if="form.platform_type === 'qiniu'">
+                    <a-form-item label="AccessKey">
+                        <a-input v-model:value="form.config.accessKey" placeholder="七牛云 AccessKey"/>
+                    </a-form-item>
+                    <a-form-item label="SecretKey">
+                        <a-input-password v-model:value="form.config.secretKey" placeholder="七牛云 SecretKey"/>
+                    </a-form-item>
+                    <a-form-item label="CDN域名">
+                        <a-input v-model:value="form.config.cdnDomain" placeholder="可选，如需自动绑定CDN域名请填写"/>
+                        <div style="margin-top: 4px; color: rgba(0,0,0,0.45); font-size: 12px">
+                            如果填写了CDN域名，证书会自动绑定到该域名，否则只会上传到证书管理
+                        </div>
                     </a-form-item>
                 </template>
 
@@ -525,7 +586,7 @@ const handleImportChange = (value) => {
 
 .key {
     color: v-bind('token.colorTextSecondary');
-    width: 60px;
+    min-width: 60px;
 }
 
 .value {

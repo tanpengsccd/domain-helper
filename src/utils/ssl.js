@@ -2,22 +2,11 @@ const acme = window.xAcme
 import * as x509 from '@peculiar/x509'
 
 
-// acme.axios.defaults.proxy = {
-//     host: '127.0.0.1',
-//     port: 10809,
-//     protocol: 'http'
-// }
-acme.setLogger((message) => {
-    console.log(message);
-});
-
-const CA = {
-    "google": acme.directory.google.production,
-    "letsencrypt": acme.directory.letsencrypt.production,
-    "zerossl": "https://acme.zerossl.com/v2/DV90",
-    "buypass": "https://api.buypass.com/acme/directory"
+if (utools.isDev()) {
+    acme.setLogger((message) => {
+        console.log(message);
+    });
 }
-
 class AcmeClient {
     constructor() {
         this.client = null;
@@ -92,7 +81,7 @@ class AcmeClient {
             if (!this.client) {
                 throw new Error('ACME client not initialized');
             }
-            
+
             // 使用订单URL获取状态
             return await this.client.getOrder({url: order.url});
         } catch (error) {
