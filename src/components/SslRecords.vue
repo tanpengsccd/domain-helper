@@ -130,11 +130,11 @@ const columns = [
         key: 'subdomain',
         fixed: "left",
     },
-    // {
-    //     title: '厂商',
-    //     dataIndex: 'issuer',
-    //     key: 'issuer',
-    // },
+    {
+        title: '厂商',
+        dataIndex: 'issuer',
+        key: 'issuer',
+    },
     {
         title: '生效时间',
         dataIndex: 'validFrom',
@@ -376,7 +376,7 @@ watch(() => route.query.ssl, (sslId) => {
 
 // 监听显示模式变化
 watch(() => showMode.value, (newMode) => {
-     refreshRecords()
+    refreshRecords()
 }, {immediate: true});
 
 const deleteApplyRecord = async (record) => {
@@ -460,6 +460,9 @@ const deleteApplyRecord = async (record) => {
                 <a-tooltip title="清理过期证书">
                     <a-button danger :icon="h(DeleteOutlined)" @click="clearExpired"></a-button>
                 </a-tooltip>
+            </a-space>
+            <a-space v-if="showMode === 'doing'">
+                <a-button :icon="h(SyncOutlined)" @click="refreshRecords"></a-button>
             </a-space>
         </a-flex>
         <div class="body" ref="xbody">

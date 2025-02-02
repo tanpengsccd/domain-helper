@@ -137,8 +137,6 @@ const handleOk = async () => {
             }
         })
         steps.value.push('证书推送成功 🎉🎉');
-        // 等待
-        await new Promise(resolve => setTimeout(resolve, 1500));
         open.value = false;
         flowers();
         successModal.value = true;
