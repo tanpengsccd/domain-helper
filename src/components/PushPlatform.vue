@@ -431,7 +431,7 @@ const handleImportChange = (value) => {
                 </a-flex>
             </template>
             <a-form layout="vertical">
-                <a-form-item v-if="!isEdit && allPushplatform.length > 0" label="快速导入">
+                <a-form-item v-if="!isEdit && allPushplatform.length > 0" label="快速导入" extra="选择一个现有平台来快速填充配置信息">
                     <a-select show-search v-model:value="importPlatformId" placeholder="从现有平台导入配置"
                               style="width: 100%"
                               @change="handleImportChange" allowClear>
@@ -439,9 +439,6 @@ const handleImportChange = (value) => {
                             {{ getPushplatformInfo(item.platform_type, "name") }} - {{ item.tag }}
                         </a-select-option>
                     </a-select>
-                    <div style="margin-top: 4px; color: rgba(0,0,0,0.45); font-size: 12px">
-                        选择一个现有平台来快速填充配置信息
-                    </div>
                 </a-form-item>
                 <a-form-item label="选择类型">
                     <a-select v-model:value="form.platform_type" @change="changeCloud" style="width: 100%">
@@ -500,11 +497,8 @@ const handleImportChange = (value) => {
                     <a-form-item label="SecretKey">
                         <a-input-password v-model:value="form.config.secretKey" placeholder="七牛云 SecretKey"/>
                     </a-form-item>
-                    <a-form-item label="CDN域名">
+                    <a-form-item label="CDN域名" extra="如果填写了CDN域名，证书会自动绑定到该域名，否则只会上传到证书管理">
                         <a-input extra="" v-model:value="form.config.cdnDomain" placeholder="可选，如需自动绑定CDN域名请填写"/>
-                        <div style="margin-top: 4px; color: rgba(0,0,0,0.45); font-size: 12px">
-                            如果填写了CDN域名，证书会自动绑定到该域名，否则只会上传到证书管理
-                        </div>
                     </a-form-item>
                 </template>
 

@@ -1,18 +1,25 @@
 import {IPushStrategy} from './IPushStrategy.js';
-import {httpGet, httpMethod, httpPost, httpsRequest} from "@/utils/http";
+import {httpGet, httpMethod, httpPost} from "@/utils/http";
 import * as x509 from '@peculiar/x509'
 
 const crypto = window.xcrypto
 const url = window.xUrl
 
+// 七牛云 API 基础配置
+const QINIU_CONFIG = {
+    BASE_URL: 'https://api.qiniu.com',
+    ENDPOINTS: {
+        SSL_CERT: '/sslcert',
+        DOMAIN: '/domain',
+    }
+}
 
 export class QiniuPushStrategy extends IPushStrategy {
-
     constructor() {
         super();
     }
 
-
+    // 工具方法
     base64ToUrlSafe(v) {
         return v.replace(/\//g, '_').replace(/\+/g, '-');
     }
@@ -23,6 +30,7 @@ export class QiniuPushStrategy extends IPushStrategy {
         return hmac.digest('base64');
     }
 
+    // 认证相关方法
     generateAccessToken(mac, requestURI, reqBody = null) {
         const u = new url.URL(requestURI);
         const path = u.pathname + u.search;
@@ -35,47 +43,41 @@ export class QiniuPushStrategy extends IPushStrategy {
         return 'QBox ' + mac.accessKey + ':' + safeDigest;
     }
 
-    async validate(config) {
-        if (!config.accessKey || !config.secretKey) {
-            throw new Error('请填写完整的七牛云配置信息');
-        }
-        // 调用七牛云API验证AK/SK是否有效
-        const {error, error_code} = await this.getSSLList(config)
-        if (error_code) {
-            throw new Error(`七牛云验证失败: ${error}`);
-        }
-        return true;
-    }
-
-
-    async getSSLList(config) {
+    // 获取通用请求头
+    getCommonHeaders(config, requestURI, contentType = 'application/json') {
         const mac = {
             accessKey: config.accessKey,
             secretKey: config.secretKey
         };
-        const requestURI = 'https://api.qiniu.com/sslcert';
         const accessToken = this.generateAccessToken(mac, requestURI);
-        return await httpGet(requestURI, {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': `${accessToken}`
-        });
-    }
-
-
-    async pushSSL(config, certData, oncall = null) {
-        const mac = {
-            accessKey: config.accessKey,
-            secretKey: config.secretKey
+        return {
+            'Content-Type': contentType,
+            'Authorization': accessToken
         };
-        const requestURI = 'https://api.qiniu.com/sslcert';
-        const accessToken = this.generateAccessToken(mac, requestURI);
-        const payload = this.parseCertificate(certData.cert, certData.key);
-        return await httpPost(requestURI, payload, {
-            'Content-Type': 'application/json',
-            'Authorization': `${accessToken}`
-        });
     }
 
+    // API 请求方法
+    async makeRequest(config, endpoint, method = 'GET', payload = null) {
+        const requestURI = `${QINIU_CONFIG.BASE_URL}${endpoint}`;
+        const headers = this.getCommonHeaders(config, requestURI);
+        
+        try {
+            switch (method.toUpperCase()) {
+                case 'GET':
+                    return await httpGet(requestURI, headers);
+                case 'POST':
+                    return await httpPost(requestURI, payload, headers);
+                case 'PUT':
+                    return await httpMethod('PUT', requestURI, headers, payload);
+                default:
+                    throw new Error(`不支持的请求方法: ${method}`);
+            }
+        } catch (error) {
+            throw new Error(`请求失败: ${error.message}`);
+        }
+    }
+
+    // 证书解析
     parseCertificate(cert, key) {
         const certInfo = new x509.X509Certificate(cert);
         return {
@@ -86,109 +88,109 @@ export class QiniuPushStrategy extends IPushStrategy {
         }
     }
 
+    // 业务方法
+    async validate(config) {
+        if (!config.accessKey || !config.secretKey) {
+            throw new Error('请填写完整的七牛云配置信息');
+        }
+        const {error, error_code} = await this.getSSLList(config);
+        if (error_code) {
+            throw new Error(`七牛云验证失败: ${error}`);
+        }
+        return true;
+    }
+
+    async getSSLList(config) {
+        return await this.makeRequest(config, QINIU_CONFIG.ENDPOINTS.SSL_CERT);
+    }
+
+    async pushSSL(config, certData) {
+        const payload = this.parseCertificate(certData.cert, certData.key);
+        return await this.makeRequest(config, QINIU_CONFIG.ENDPOINTS.SSL_CERT, 'POST', payload);
+    }
+
     async getDomainInfo(config, domain) {
-        const mac = {
-            accessKey: config.accessKey,
-            secretKey: config.secretKey
-        };
-        const requestURI = 'https://api.qiniu.com/domain/' + domain;
-        const accessToken = this.generateAccessToken(mac, requestURI);
-        return await httpGet(requestURI, {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Authorization': `${accessToken}`
-        });
+        return await this.makeRequest(config, `${QINIU_CONFIG.ENDPOINTS.DOMAIN}/${domain}`);
     }
 
     async changeDomainHttps(config, domain, certID, http2Enable, forceHttps) {
-        const mac = {
-            accessKey: config.accessKey,
-            secretKey: config.secretKey
-        };
-        const requestURI = `https://api.qiniu.com/domain/${domain}/httpsconf`;
-        const accessToken = this.generateAccessToken(mac, requestURI);
-        const payload = {
-            certID: certID,
-            http2Enable,
-            forceHttps
-        };
-        return await httpMethod("PUT", requestURI, {
-            'Content-Type': 'application/json',
-            'Authorization': `${accessToken}`
-        }, payload);
+        const endpoint = `${QINIU_CONFIG.ENDPOINTS.DOMAIN}/${domain}/httpsconf`;
+        const payload = { certID, http2Enable, forceHttps };
+        return await this.makeRequest(config, endpoint, 'PUT', payload);
     }
 
     async openDomainHttps(config, domain, certID) {
-        const mac = {
-            accessKey: config.accessKey,
-            secretKey: config.secretKey
-        }
-        const requestURI = `https://api.qiniu.com/domain/${domain}/sslize`;
-        const accessToken = this.generateAccessToken(mac, requestURI);
+        const endpoint = `${QINIU_CONFIG.ENDPOINTS.DOMAIN}/${domain}/sslize`;
         const payload = {
-            certID: certID,
+            certID,
             http2Enable: true,
             forceHttps: true,
         };
-        return await httpMethod("PUT", requestURI, {
-            'Content-Type': 'application/json',
-            'Authorization': `${accessToken}`
-        }, payload);
+        return await this.makeRequest(config, endpoint, 'PUT', payload);
     }
 
     async push(config, certData, oncall = null) {
+
+        console.log( await this.getSSLList(config))
+
+        return false;
         try {
-            oncall && oncall('beforePush', {msg: "开始推送证书"});
+            // 推送证书
+            oncall?.('beforePush', {msg: "开始推送证书"});
             const res = await this.pushSSL(config, certData);
             if (res.code !== 200) {
                 throw new Error(`推送失败: ${res.error}`);
             }
-            oncall && oncall('afterPush', {msg: "证书文件推送成功 🎉"});
+            oncall?.('afterPush', {msg: "证书文件推送成功 🎉"});
 
-            // 判断是否设置了cdnDomain 如果设置了 需要将证书直接推送到cdn
+            // 处理 CDN 绑定
             let bindMsg = '';
             if (config.cdnDomain) {
-                try {
-                    const {https, error} = await this.getDomainInfo(config, config.cdnDomain)
-                    if (error) {
-                        throw new Error(`获取域名信息失败: ${error}`);
-                    }
-                    if (https.certId) {
-                        // 证书已存在，更换证书
-                        const {error} = await this.changeDomainHttps(config, config.cdnDomain, res.certID, https.http2Enable, https.forceHttps);
-                        if (error) {
-                            throw new Error(`更换证书失败: ${error}`);
-                        }
-                    } else {
-                        // 证书不存在，开启https
-                        const {error} = await this.openDomainHttps(config, config.cdnDomain, res.certID);
-                        if (error) {
-                            throw new Error(`开启https失败: ${error}`);
-                        }
-                    }
-                    bindMsg = `证书成功绑定到CDN域名 <span style="color: #52c41a;font-weight: 500;">${config.cdnDomain}</span> 🎉🎉`;
-                    oncall && oncall('bindCdn', {
-                        msg: bindMsg
-                    })
-                } catch (e) {
-                    bindMsg = `绑定CDN失败: ${e.message} <br> 请登录七牛云控制台手动绑定`
-                    oncall && oncall('bindCdn', {
-                        msg: bindMsg
-                    })
-                }
+                bindMsg = await this.handleCdnBinding(config, res.certID, oncall);
             }
 
-            oncall && oncall('success', {msg: `推送成功 证书ID: ${res.certID}`});
+            oncall?.('success', {msg: `推送成功 证书ID: ${res.certID}`});
             return {
                 msg: `推送成功 证书ID: <span style="color: #1890ff;font-weight: bold;">${res.certID}</span>` +
                      (bindMsg ? `<br><br>${bindMsg}` : ''),
                 extData: res
             };
         } catch (error) {
-            oncall && oncall('error', {
-                msg: error.toString()
-            });
+            oncall?.('error', { msg: error.toString() });
             console.error('QiniuPushStrategy push error:', error);
             throw new Error(`推送失败: ${error.message}`);
+        }
+    }
+
+    // CDN 绑定处理
+    async handleCdnBinding(config, certID, oncall) {
+        try {
+            const {https, error} = await this.getDomainInfo(config, config.cdnDomain);
+            if (error) {
+                throw new Error(`获取域名信息失败: ${error}`);
+            }
+
+            if (https.certId) {
+                const {error: changeError} = await this.changeDomainHttps(
+                    config, 
+                    config.cdnDomain, 
+                    certID, 
+                    https.http2Enable, 
+                    https.forceHttps
+                );
+                if (changeError) throw new Error(`更换证书失败: ${changeError}`);
+            } else {
+                const {error: openError} = await this.openDomainHttps(config, config.cdnDomain, certID);
+                if (openError) throw new Error(`开启https失败: ${openError}`);
+            }
+
+            const successMsg = `证书成功绑定到CDN域名 <span style="color: #52c41a;font-weight: 500;">${config.cdnDomain}</span> 🎉🎉`;
+            oncall?.('bindCdn', { msg: successMsg });
+            return successMsg;
+        } catch (e) {
+            const errorMsg = `绑定CDN失败: ${e.message} <br> 请登录七牛云控制台手动绑定`;
+            oncall?.('bindCdn', { msg: errorMsg });
+            return errorMsg;
         }
     }
 } 
