@@ -36,7 +36,6 @@ export class QiniuPushStrategy extends IPushStrategy {
     }
 
     async validate(config) {
-        console.log('config', config)
         if (!config.accessKey || !config.secretKey) {
             throw new Error('请填写完整的七牛云配置信息');
         }
@@ -79,7 +78,6 @@ export class QiniuPushStrategy extends IPushStrategy {
 
     parseCertificate(cert, key) {
         const certInfo = new x509.X509Certificate(cert);
-        console.log('certInfo', certInfo);
         return {
             name: certInfo.subject,
             common_name: certInfo.subject,
@@ -103,7 +101,6 @@ export class QiniuPushStrategy extends IPushStrategy {
                 extData: res
             };
         } catch (error) {
-            console.error('QiniuPushStrategy push error:', error);
             oncall && oncall('error', error);
             throw new Error(`推送失败: ${error.message}`);
         }
