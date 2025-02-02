@@ -112,14 +112,18 @@ const handleOk = async () => {
         // 这里应该添加实际的证书推送逻辑
         // 使用 sslInfo.value 中的证书信息
         const pushService = PushServiceFactory.getService(paltformInfo.platform_type);
-
         await pushService.validate(paltformInfo.config);
         pushRes.value = await pushService.push(paltformInfo.config, {
             cert: sslInfo.value.cert,
             key: sslInfo.value.key,
         }, (type, extData) => {
-            console.log(type, extData);
             switch (type) {
+                case "error":
+                    steps.value.push(`❌ ${extData.msg}`);
+                    break;
+                case "success":
+                    steps.value.push(`✅ ${extData.msg}`);
+                    break;
                 case "connected":
                 case "beforePush":
                 case "afterPush":
@@ -127,15 +131,14 @@ const handleOk = async () => {
                 case "afterCommand":
                     steps.value.push(extData.msg);
                     break;
-                case "error":
-                    steps.value.push(`❌ ${extData.msg}`);
-                    break;
-                case "success":
-                    steps.value.push(`✅ ${extData.msg}`);
+                default:
+                    steps.value.push(extData.msg);
                     break;
             }
         })
         steps.value.push('证书推送成功 🎉🎉');
+        // 等待
+        await new Promise(resolve => setTimeout(resolve, 1500));
         open.value = false;
         flowers();
         successModal.value = true;
@@ -249,9 +252,7 @@ const init = () => {
             </a-form>
 
             <div v-else>
-                <p v-for="(i, index) in steps" :key="index">
-                    {{ i }}
-                </p>
+                <p v-for="(i, index) in steps" :key="index" v-html="i"></p>
                 <div style="width: 100%;text-align: center;padding-top: 20px;" v-if="confirmLoading">
                     <a-spin :indicator="indicator" tip="正在推送中，请勿退出程序"/>
                 </div>

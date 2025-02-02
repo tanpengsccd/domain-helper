@@ -120,11 +120,15 @@ export function httpsRequestWithResponseHeader(options, data, ext = {
 
 
 export async function httpGet(url, header = {}) {
+    return await httpMethod('GET', url, header);
+}
+
+export async function httpMethod(Method, url, header = {}, data = null) {
     const urlObj = new URL(url);
     const options = {
         hostname: urlObj.hostname,
         path: urlObj.pathname + urlObj.search,
-        method: 'GET',
+        method: Method.toUpperCase(),
         headers: header
     };
     let ext = {is_https: false}
@@ -132,20 +136,14 @@ export async function httpGet(url, header = {}) {
     if (url.startsWith('https')) {
         ext.is_https = true
     }
-    return await httpsRequest(options, null, true, ext);
+    // 如果data是对象，转为json字符串
+    if (typeof data === 'object') {
+        data = JSON.stringify(data);
+    }
+    return await httpsRequest(options, data, true, ext);
 }
 
+
 export async function httpPost(url, data, header = {}) {
-    const urlObj = new URL(url);
-    const options = {
-        hostname: urlObj.hostname,
-        path: urlObj.pathname + urlObj.search,      method: 'POST',
-        headers: header
-    };
-    let ext = {is_https: false}
-    // 判断是否使用https
-    if (url.startsWith('https')) {
-        ext.is_https = true
-    }
-    return await httpsRequest(options, JSON.stringify(data), true, ext);
+    return await httpMethod('POST', url, header, data);
 }

@@ -38,16 +38,16 @@ export class SSHPushStrategy extends IPushStrategy {
 
             // 执行重启命令
             if (config.restartCommand) {
-                oncall && oncall('beforeCommand', '开始执行命令');
+                oncall && oncall('beforeCommand', {msg: '开始执行命令'});
                 await this.ssh.execCommand(config.restartCommand);
-                oncall && oncall('afterCommand', '命令执行成功 🎉');
+                oncall && oncall('afterCommand', {msg: '命令执行成功 🎉'});
             }
-            oncall && oncall('success', '证书推送完成 🎉');
+            oncall && oncall('success',  {msg: '证书推送完成 🎉'});
             await this.ssh.dispose();
             return true;
         } catch (error) {
             console.error('SSHPushStrategy push error:', error);
-            oncall && oncall('error', error);
+            oncall && oncall('error', {msg: error.toString()});
             throw new Error(`推送失败: ${error.message}`);
         }
     }

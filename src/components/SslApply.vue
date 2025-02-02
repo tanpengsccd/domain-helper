@@ -112,20 +112,19 @@ const initAcmeClient = async (accountKey = null, accountUrl = null, ca = null) =
         const acmeDb = new DbAcmeAccount();
         ca = ca || form.ca;
         const acmeClientKey = `${ca}_${accountKey}`;
-        console.log("acmeClientKey", acmeClientKey)
         if (accountKey && acmeClientMap.has(acmeClientKey)) {
             return acmeClientMap.get(acmeClientKey);
         }
 
         const acmeClient = new AcmeClient();
-        const acmeAccount = acmeDb.getAccount(ca, { accountKey, accountUrl });
+        const acmeAccount = acmeDb.getAccount(ca, {accountKey, accountUrl});
         accountKey = accountKey || acmeAccount.accountKey;
         accountUrl = accountUrl || acmeAccount.accountUrl;
 
         const res = await acmeClient.init(userEmail, accountKey, accountUrl, ca, getCaExt(ca));
 
         if (accountKey !== res.accountKey) {
-            acmeDb.saveAccount(ca, { accountKey: res.accountKey, accountUrl: res.accountUrl });
+            acmeDb.saveAccount(ca, {accountKey: res.accountKey, accountUrl: res.accountUrl});
         }
 
         acmeClientMap.set(acmeClientKey, acmeClient);
@@ -241,6 +240,7 @@ const acmeDo = async ({sslId, isOld = false, callback = null}) => {
     const acmeClient = await initAcmeClient(sslRecord.accountKey, sslRecord.accountUrl, sslRecord.ca || "letsencrypt");
     // 如果是二次申请，需要检查是否过期
     // 过期判断
+    let orderStatus = "";
     if (isOld) {
         if ((new Date(sslRecord.expires)).getTime() < Date.now()) {
             message.error('申请已过期，请删除该记录');
@@ -252,7 +252,9 @@ const acmeDo = async ({sslId, isOld = false, callback = null}) => {
             // 增加订单状态查询步骤提示
             renderLoging('检测订单状态中...');
             const {status} = await acmeClient.getOrderStatus(sslRecord.order)
-            if (status !== "pending") {
+            orderStatus = status;
+            // 续签的证书，如果不超过有效期，订单可能无需验证
+            if (!["ready", "pending"].includes(orderStatus)) {
                 message.error('证书订单状态异常，请删除该记录');
                 open.value = false;
                 return false;
@@ -274,6 +276,16 @@ const acmeDo = async ({sslId, isOld = false, callback = null}) => {
 
         renderLoging('开始 ACME 验证');
         for (const challenge of sslRecord.challenges) {
+            // 如果已经验证过了，跳过
+            if (challenge.status === 'completed') {
+                continue;
+            }
+            // 如果订单状态是ready 说明已经验证过了
+            if (orderStatus === "ready") {
+                challenge.status = 'completed';
+                renderLoging(`${challenge.domain} ACME 验证成功 🎉`, token.value.colorSuccess);
+                continue;
+            }
             try {
                 const verified = await acmeClient.verifyDomainChallenge(
                     challenge.authz,
@@ -735,7 +747,9 @@ const targetDomains = computed(() => {
                         <a-select-option value="google"
                                          :disabled="!(sysConfig.ca.google_hmacKey && sysConfig.ca.google_kid && sysConfig.ca.google_proxy)">
                             Google CA
-                            {{ !(sysConfig.ca.google_hmacKey && sysConfig.ca.google_kid && sysConfig.ca.google_proxy) ? ' [未配置]' : '' }}
+                            {{
+                                !(sysConfig.ca.google_hmacKey && sysConfig.ca.google_kid && sysConfig.ca.google_proxy) ? ' [未配置]' : ''
+                            }}
                         </a-select-option>
                         <a-select-option value="zerossl"
                                          :disabled="!(sysConfig.ca.zerossl_hmacKey && sysConfig.ca.zerossl_kid)">ZeroSSL
@@ -824,7 +838,10 @@ const targetDomains = computed(() => {
                     {{ new Date(sslInfo?.validTo).toLocaleString() }}
                 </div>
                 <div>此证书可用于以下域名</div>
-                <div :style="{color: colorPrimary}" v-for="(d, i) in sslInfo.subdomain.split(',')" :key="i">{{ d }}</div>
+                <div :style="{color: colorPrimary}" v-for="(d, i) in sslInfo.subdomain.split(',')" :key="i">{{
+                        d
+                    }}
+                </div>
                 <span>cert为证书文件，key为私钥文件</span>
                 <span>部署使用这两个文件即可</span>
                 <span>可在证书管理中查看申请记录</span>

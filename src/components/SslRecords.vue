@@ -116,11 +116,7 @@ const calcRecords = computed(() => {
 })
 
 const calcDoingRecords = computed(() => {
-    return (allDoingSsl.value || []).filter(item => {
-        const domainMatch = !searchForm.domain || item.domain === searchForm.domain;
-        const keywordMatch = !searchForm.keyword || item.subdomain.toLowerCase().includes(searchForm.keyword.toLowerCase());
-        return domainMatch && keywordMatch;
-    })
+    return allDoingSsl.value || []
 })
 defineExpose({
     refreshRecords
