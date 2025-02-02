@@ -170,7 +170,7 @@ export class QiniuPushStrategy extends IPushStrategy {
                         msg: bindMsg
                     })
                 } catch (e) {
-                    bindMsg = `绑定CDN失败: ${e.message}`
+                    bindMsg = `绑定CDN失败: ${e.message} <br> 请登录七牛云控制台手动绑定`
                     oncall && oncall('bindCdn', {
                         msg: bindMsg
                     })
