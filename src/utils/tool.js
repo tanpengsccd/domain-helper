@@ -8,6 +8,7 @@ const dns = window.xDns
 
 
 import confetti from 'canvas-confetti';
+import {TcpmkDnsTool} from "@/utils/TcpmkDnsTool";
 
 function randomInRange(min, max) {
     return Math.random() * (max - min) + min;
@@ -253,13 +254,15 @@ export function getAvailableSSL() {
 }
 
 export function getDnsServer(domain) {
-
     // 获取DNS服务器 优先使用 tcp.mk服务
-
-    // https://tcp.mk/api/dig?name=lijilong.com.cn&type=NS
-
-
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
+        const nsname = await TcpmkDnsTool.getFirstNsServer(domain);
+        if (nsname) {
+            resolve({
+                nsname: nsname
+            });
+            return;
+        }
         dns.resolveNs(domain, (err, address) => {
             if (err) {
                 reject(err);
@@ -328,4 +331,8 @@ export function getRootDomain(domain) {
         domain = domain.replace('*.', '');
     }
     return psl.get(domain);
+}
+
+export function goUrl(url) {
+    utools.shellOpenExternal(url);
 }

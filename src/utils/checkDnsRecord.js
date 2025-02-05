@@ -1,4 +1,5 @@
 import {httpGet} from "@/utils/http";
+import {TcpmkDnsTool} from "@/utils/TcpmkDnsTool";
 
 const dns = window.xDns.promises
 
@@ -6,7 +7,6 @@ const WAY_MAP = {
     google: "https://dns.google/resolve", // 需代理
     cloudflare: "https://cloudflare-dns.com/dns-query", // 需代理
     one: "https://1.1.1.1/dns-query",
-    tcpmk: ""
 }
 
 export async function checkDnsRecord(domain, expectedValue, timeout = 60, interval = 5, way = "one", callback = null) {
@@ -33,11 +33,18 @@ export async function checkDnsRecord(domain, expectedValue, timeout = 60, interv
         try {
             if (way === "local") {
                 flag = await checkDnsRecordByLocal(domain, expectedValue);
+            } else if (way === "tcpmk") {
+                const result = await TcpmkDnsTool.queryDnsRecord(domain, "TXT");
+                console.log(result, expectedValue)
+                if (result.code === 200 && result.data) {
+                    console.log(result.data, expectedValue)
+                    flag = TcpmkDnsTool.validateDnsRecord(result.data, "TXT", expectedValue);
+                }
             } else {
                 flag = await checkDnsRecordByNet(domain, expectedValue, way);
             }
         } catch (e) {
-
+            lastError = e.message;
         }
         if (flag) {
             callback && callback('checkDnsRecord_success', {

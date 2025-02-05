@@ -24,6 +24,7 @@ import AddDomain from "@/components/AddDomain.vue";
 import DomainRecords from "@/components/DomainRecords.vue";
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
+
 dayjs.locale('zh-cn');
 import {useThemeStore} from '@/stroes/themeStore.js';
 import {getDnsService} from "@/service/DnsService";
@@ -313,7 +314,7 @@ const filteredDomains = computed(() => {
                     域名列表
                 </div>
                 <div class="desc" :style="{ color: token.colorTextTertiary }">
-<!--                    多平台多账号多域名一站式解析管理及ssl证书申请工具-->
+                    <!--                    多平台多账号多域名一站式解析管理及ssl证书申请工具-->
                 </div>
             </a-space>
             <a-space>
@@ -334,7 +335,7 @@ const filteredDomains = computed(() => {
                         {{ item.label }}
                     </a-select-option>
                 </a-select>
-                <a-divider type="vertical" />
+                <a-divider type="vertical"/>
                 <a-button type="default" @click="toggleViewMode">
                     <template #icon>
                         <TableOutlined v-if="viewMode === 'card'"/>
@@ -342,7 +343,7 @@ const filteredDomains = computed(() => {
                     </template>
                 </a-button>
                 <a-tooltip title="绑定新域名">
-                     <a-button type="primary"  class="addBtn"  @click="openAddDomain" :icon="h(PlusOutlined)"></a-button>
+                    <a-button type="primary" class="addBtn" @click="openAddDomain" :icon="h(PlusOutlined)"></a-button>
                 </a-tooltip>
             </a-space>
         </div>
@@ -353,7 +354,10 @@ const filteredDomains = computed(() => {
                         @click="chooseDomain(i)">
                     <template #title>
                         <a-flex align="center" justify="space-between" style="padding: 10px 0;height: 50px;" gap="10">
-                            <img :src="i.cloud_info.icon" alt="" style="height: 17px;">
+                            <a-space>
+                                <img :src="i.cloud_info.icon" alt="" style="height: 17px;">
+                                <a-typography-text v-if="i.cloud_info.name">{{ i.cloud_info.name }}</a-typography-text>
+                            </a-space>
                             <span class="account-tag">
                                 {{ i.account_info.tag }}
                             </span>
@@ -407,7 +411,8 @@ const filteredDomains = computed(() => {
 
             <!-- 表格视图 -->
             <div class="table_box" v-if="viewMode === 'table'">
-                <a-table :columns="columns" :data-source="filteredDomains" :pagination="false" :row-key="record => record.id"
+                <a-table :columns="columns" :data-source="filteredDomains" :pagination="false"
+                         :row-key="record => record.id"
                          :scroll="{ y: 'calc(100vh - 118px)' }" :sticky="{ offsetHeader: 0 }" @row-click="chooseDomain">
                     <template #bodyCell="{ column, record }">
                         <template v-if="column.key === 'cloud'">
@@ -427,7 +432,9 @@ const filteredDomains = computed(() => {
                         </template>
                         <template v-else-if="column.key === 'domain'">
                             <a-space>
-                                <span class="domain-text" @click.stop="xcopyText(record.domain)">{{ record.domain }}</span>
+                                <span class="domain-text" @click.stop="xcopyText(record.domain)">{{
+                                        record.domain
+                                    }}</span>
                             </a-space>
                         </template>
                         <template v-else-if="column.key === 'action'">
@@ -639,6 +646,7 @@ const filteredDomains = computed(() => {
             display: flex;
             justify-content: flex-start;
             align-items: flex-start;
+
             :deep(.ant-card) {
                 width: 45%;
                 height: 182px;
@@ -671,7 +679,7 @@ const filteredDomains = computed(() => {
         .domain-text {
             cursor: pointer;
             transition: color 0.3s;
-            
+
             &:hover {
                 color: v-bind('token.colorPrimary');
             }

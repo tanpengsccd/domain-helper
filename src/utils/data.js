@@ -221,7 +221,7 @@ export const cloudsData = [
         ]
     },
     {
-        name: "",
+        name: "spaceship",
         title: "spaceship",
         key: "spaceship",
         icon: spaceshipLogo,

@@ -9,6 +9,7 @@ import {useThemeStore} from '@/stroes/themeStore';
 import {theme} from 'ant-design-vue';
 import {message} from 'ant-design-vue';
 import {validateNotification} from '@/utils/notificationChan';
+import {goUrl} from "@/utils/tool";
 
 const {useToken} = theme;
 const {token} = useToken();
@@ -345,8 +346,8 @@ const getButtonText = (type) => {
                                     <a-popover title="途径说明" trigger="hover">
                                         <template #content>
                                             <a-space direction="vertical">
-                                                <div>
-                                                    推荐使用 1.1.1.1 网络验证
+                                                <div @click="goUrl('https://tcp.mk')">
+                                                    推荐使用  <a>tcp.mk</a> 网络验证
                                                 </div>
                                                 <div>
                                                     遇到问题请使用本地查询
@@ -364,6 +365,7 @@ const getButtonText = (type) => {
                                 v-model:value="config.ssl.dns_verify"
                                 @change="(e) => updateConfig('ssl', { ...config.ssl, dns_verify: e.target.value })"
                             >
+                                <a-radio value="tcpmk">tcp.mk</a-radio>
                                 <a-radio value="one">1.1.1.1</a-radio>
                                 <a-radio value="local">本地查询(请关闭代理)</a-radio>
                             </a-radio-group>
