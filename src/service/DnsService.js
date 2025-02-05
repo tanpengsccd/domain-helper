@@ -198,8 +198,6 @@ class DnsService {
             // 找到所有 _acme-challenge 记录
             const acmeRecords = res.list.filter(item => item.Name === target);
             // 删除所有 _acme-challenge 记录
-
-            console.log('删除 acmeRecords', acmeRecords);
             return Promise.all(acmeRecords.map(item => this.deleteRecord(domain, item.RecordId)));
         });
     }

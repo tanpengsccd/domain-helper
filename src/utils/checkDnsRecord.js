@@ -34,12 +34,7 @@ export async function checkDnsRecord(domain, expectedValue, timeout = 60, interv
             if (way === "local") {
                 flag = await checkDnsRecordByLocal(domain, expectedValue);
             } else if (way === "tcpmk") {
-                const result = await TcpmkDnsTool.queryDnsRecord(domain, "TXT");
-                console.log(result, expectedValue)
-                if (result.code === 200 && result.data) {
-                    console.log(result.data, expectedValue)
-                    flag = TcpmkDnsTool.validateDnsRecord(result.data, "TXT", expectedValue);
-                }
+                flag = await TcpmkDnsTool.checkDnsRecord(domain, "TXT", expectedValue);
             } else {
                 flag = await checkDnsRecordByNet(domain, expectedValue, way);
             }
