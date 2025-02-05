@@ -253,16 +253,25 @@ export function getAvailableSSL() {
 }
 
 export function getDnsServer(domain) {
+
+    // 获取DNS服务器 优先使用 tcp.mk服务
+
+    // https://tcp.mk/api/dig?name=lijilong.com.cn&type=NS
+
+
     return new Promise((resolve, reject) => {
-        dns.resolveSoa(domain, (err, address) => {
+        dns.resolveNs(domain, (err, address) => {
             if (err) {
                 reject(err);
             } else {
-                resolve(address);
+                resolve({
+                    nsname: address?.[0] || ""
+                });
             }
         });
     });
 }
+
 
 // 根据给定的天数，判断ssl证书 有效期
 
