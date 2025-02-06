@@ -7,6 +7,21 @@
 ### 简介 📝
 
 域名助手 是一款功能强大的域名、SSL证书管理工具，集成在uTools平台中。它能帮助开发者和域名管理员更高效地管理他们的域名资产。
+![1.png](http://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/1.png)
+
+![2.png](http://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/2.png)
+
+![3.png](http://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/3.png)
+
+![4.png](http://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/4.png)
+
+![5.png](http://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/5.png)
+
+![6.png](http://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/6.png)
+
+![7.png](http://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/7.png)
+
+![8.png](http://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/8.png)
 
 #### 插件地址
 
