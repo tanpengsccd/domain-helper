@@ -112,6 +112,12 @@ npm install
 npm run dev
 
 # 构建生产版本
+
+# 先进入 src/release_npm ，安装打包需要的依赖
+npm install
+
+# 然后回到根目录，执行打包命令
+
 npm run build
 ```
 
