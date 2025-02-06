@@ -254,10 +254,7 @@ const downloadDomains = (item) => {
                 </a-space>
             </a-card>
 
-            <a-empty
-                style="margin-top: 20vh;"
-                v-if="allCloudsAccounts.length === 0"
-            >
+            <a-empty v-if="allCloudsAccounts.length === 0">
                 <template #description>
                     <p :style="{ color: token.colorTextTertiary }">
                         暂无账号信息
@@ -362,8 +359,9 @@ const downloadDomains = (item) => {
         :global(.content-expanded) & {
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
         }
-                // 当只有一个卡片时限制宽度和高度
-                &:has(> :only-child) {
+
+        // 当只有一个卡片时限制宽度和高度
+        &:has(> :only-child) {
             display: flex;
             justify-content: flex-start;
             align-items: flex-start;
@@ -373,7 +371,12 @@ const downloadDomains = (item) => {
             }
         }
 
-
+        // 当显示 Empty 组件时的样式
+        &:has(> .ant-empty) {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
     }
 }
 

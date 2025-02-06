@@ -121,7 +121,7 @@ const initAcmeClient = async (accountKey = null, accountUrl = null, ca = null) =
         accountKey = accountKey || acmeAccount.accountKey;
         accountUrl = accountUrl || acmeAccount.accountUrl;
 
-        const res = await acmeClient.init(userEmail, accountKey, accountUrl, ca, getCaExt(ca));
+        const res = await acmeClient.init(form.email, accountKey, accountUrl, ca, getCaExt(ca));
 
         if (accountKey !== res.accountKey) {
             acmeDb.saveAccount(ca, {accountKey: res.accountKey, accountUrl: res.accountUrl});
