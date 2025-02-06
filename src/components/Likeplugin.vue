@@ -108,13 +108,13 @@ const goUrl = (url) => {
                     <h3>🌟 欢迎参与共建</h3>
                     <p>本项目已开源，欢迎 Star 和贡献代码！</p>
                     <a-flex justify="center" align="center" :gap="16">
-                        <a-button type="primary" @click="goUrl('https://github.com/imxiny/domian-helper')" target="_blank">
+                        <a-button type="primary" @click="goUrl('https://github.com/imxiny/domain-helper')" target="_blank">
                             <template #icon>
                                 <GithubOutlined/>
                             </template>
                             访问 GitHub
                         </a-button>
-                        <a-button @click="goUrl('https://github.com/imxiny/domian-helper/stargazers')" target="_blank">
+                        <a-button @click="goUrl('https://github.com/imxiny/domain-helper/stargazers')" target="_blank">
                             <template #icon>
                                 <StarOutlined/>
                             </template>
