@@ -114,6 +114,8 @@ npm run dev
 # 构建生产版本
 
 # 先进入 src/release_npm ，安装打包需要的依赖
+# 什么样的包需要安装到  src/release_npm 下 ？
+# 很简单，web环境下不支持的，需要依赖node环境的包 都需要安装到 src/release_npm 下
 npm install
 
 # 然后回到根目录，执行打包命令
