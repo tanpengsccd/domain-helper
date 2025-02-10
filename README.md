@@ -110,7 +110,21 @@ npm install
 
 # 启动开发服务器
 npm run dev
+```
 
+然后 utools下载安装 [utools开发者工具](https://u.tools/plugins/detail/uTools+%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7/?c=6o7nuxaqme) 
+
+创建一个项目 
+![微信截图_20250210143720.png](https://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20250210143720.png)
+
+选择 `plugin.json`
+![1739169472445.png](https://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/1739169472445.png)
+
+接入开发，然后打开，即可在utools中查看效果
+![1739170571210.png](https://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/1739170571210.png)
+
+#### 打包
+```bash
 # 构建生产版本
 
 # 先进入 src/release_npm ，安装打包需要的依赖
@@ -122,6 +136,8 @@ npm install
 
 npm run build
 ```
+然后进入 utools开发者工具，更换`plugin.json` 为 `dist`下的`plugin.json` 
+在utools开发者工具中打包即可
 
 ### 贡献指南 🤝
 
