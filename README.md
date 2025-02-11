@@ -148,7 +148,8 @@ npm run build
 3. 提交你的更改 (git commit -m 'Add some AmazingFeature')
 4. 推送到分支 (git push origin feature/AmazingFeature)
 5. 开启一个 Pull Request
-6. 接受代码优化类的合并，前端还在学习中，功能匆忙，代码质量不高，欢迎指正
+6. 接受代码优化类的合并，前端还在学习中，功能匆忙，代码质量不高，欢迎指正 
+7. ☣️☣️☣️缩进请务必使用4个空格 ❌❌❌
 
 
 ### 开源协议 📄
