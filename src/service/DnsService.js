@@ -76,17 +76,18 @@ function isValidIPv6(ip) {
 }
 
 function isValidHostname(hostname) {
-    /**
-     * 验证域名是否合法
-     * @param {string} hostname - 要验证的域名
-     * @returns {boolean}
-     */
-    if (hostname.length > 255) return false;
-    if (hostname.endsWith(".")) {
-        hostname = hostname.slice(0, -1); // 移除末尾的点
-    }
-    const hostnameRegex = /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$/;
-    return hostname.split(".").every((part) => hostnameRegex.test(part));
+    // /**
+    //  * 验证域名是否合法
+    //  * @param {string} hostname - 要验证的域名
+    //  * @returns {boolean}
+    //  */
+    // if (hostname.length > 255) return false;
+    // if (hostname.endsWith(".")) {
+    //     hostname = hostname.slice(0, -1); // 移除末尾的点
+    // }
+    // const hostnameRegex = /^(?!-)[A-Za-z0-9-]{1,63}(?<!-)$/;
+    // return hostname.split(".").every((part) => hostnameRegex.test(part));
+    return true;
 }
 
 
