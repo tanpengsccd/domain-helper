@@ -28,42 +28,49 @@
 [域名助手 - uTools插件](https://www.u-tools.cn/plugins/detail/%E5%9F%9F%E5%90%8D%E5%8A%A9%E6%89%8B/)
 
 ### 主要功能 ✨
+
 - 📝 域名记录管理
-  - 支持A、CNAME等记录类型
-  - 批量导入导出
+    - 支持A、CNAME等记录类型
+    - 批量导入导出
 
 - 🔐 SSL证书管理
-  - 证书申请与更新
-  - 证书状态监控
-  - 到期提醒
+    - 证书申请与更新
+    - 证书状态监控
+    - 到期提醒
 
 - 🏢 多平台支持
-  - 阿里云
-  - 腾讯云
-  - 华为云
-  - 西部数据
-  - 火山引擎
-  - Cloudflare
-  - AWS
-  - SpaceShip
-  - 更多平台持续添加中...
+    - 阿里云
+    - 腾讯云
+    - 华为云
+    - 西部数据
+    - 火山引擎
+    - Cloudflare
+    - AWS
+    - SpaceShip
+    - 更多平台持续添加中...
 
 ### TODO List 📋
-- 🔄 证书推送平台扩展
-  - 支持阿里云OSS
-  - 支持七牛云
-  - 更多平台持续开发中...
+
+- 🛡️ 证书申请功能
+    - 支持根域名与泛域名证书在同一本证书上
+    - 更多平台持续开发中...
   
+- 🔄 证书推送平台扩展
+    - 支持阿里云推送
+    - 更多平台持续开发中...
+
 - 🔍 SSL监控增强
-  - 支持非标准端口SSL监控
-  - 外部证书导入与管理
-  - 支持泛域名与根域名在同一证书
+    - 支持非标准端口SSL监控
+    - 外部证书导入与管理
+    - 支持泛域名与根域名在同一证书
+    - 增加监控分组功能
+    - 增加飞书webhook推送
 
 - 🏷️ 域名管理优化
-  - 账户域名标签分组
-  - 分组筛选功能
-  - MX记录和优先级配置
-  - 支持更多域名服务商平台
+    - 账户域名标签分组
+    - 分组筛选功能
+    - MX记录和优先级配置
+    - 支持更多域名服务商平台
 
 👥 欢迎一起共建，提升产品功能！
 
@@ -83,6 +90,7 @@
 ### 开发相关 🛠️
 
 本项目使用以下技术栈：
+
 - Vue 3
 - Vite
 - Ant Design Vue
@@ -90,8 +98,8 @@
 
 #### 本地开发
 
-
 为了保护敏感信息，项目中没有包含salt.js文件，需要自行新建
+
 ```js
 // 新建salt.js文件
 // 在路径 /src/utils/ 下新建 salt.js 文件，内容如下：
@@ -99,7 +107,6 @@ export function a() {
     return generateKeyFromPassword("密码", "盐");
 }
 ```
-
 
 ```bash
 # 克隆项目
@@ -112,9 +119,10 @@ npm install
 npm run dev
 ```
 
-然后 utools下载安装 [utools开发者工具](https://u.tools/plugins/detail/uTools+%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7/?c=6o7nuxaqme) 
+然后
+utools下载安装 [utools开发者工具](https://u.tools/plugins/detail/uTools+%E5%BC%80%E5%8F%91%E8%80%85%E5%B7%A5%E5%85%B7/?c=6o7nuxaqme)
 
-创建一个项目 
+创建一个项目
 ![微信截图_20250210143720.png](https://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/%E5%BE%AE%E4%BF%A1%E6%88%AA%E5%9B%BE_20250210143720.png)
 
 选择 `plugin.json`
@@ -124,6 +132,7 @@ npm run dev
 ![1739170571210.png](https://xinu-note-images.oss-cn-beijing.aliyuncs.com/bagua/2025-02/1739170571210.png)
 
 #### 打包
+
 ```bash
 # 构建生产版本
 
@@ -136,7 +145,8 @@ npm install
 
 npm run build
 ```
-然后进入 utools开发者工具，更换`plugin.json` 为 `dist`下的`plugin.json` 
+
+然后进入 utools开发者工具，更换`plugin.json` 为 `dist`下的`plugin.json`
 在utools开发者工具中打包即可
 
 ### 贡献指南 🤝
@@ -148,9 +158,8 @@ npm run build
 3. 提交你的更改 (git commit -m 'Add some AmazingFeature')
 4. 推送到分支 (git push origin feature/AmazingFeature)
 5. 开启一个 Pull Request
-6. 接受代码优化类的合并，前端还在学习中，功能匆忙，代码质量不高，欢迎指正 
+6. 接受代码优化类的合并，前端还在学习中，功能匆忙，代码质量不高，欢迎指正
 7. ☣️☣️☣️缩进请务必使用4个空格 ❌❌❌
-
 
 ### 开源协议 📄
 
