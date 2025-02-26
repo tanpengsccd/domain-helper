@@ -131,11 +131,6 @@ const columns = [
         fixed: "left",
     },
     {
-        title: '厂商',
-        dataIndex: 'issuer',
-        key: 'issuer',
-    },
-    {
         title: '生效时间',
         dataIndex: 'validFrom',
         key: 'validFrom',
