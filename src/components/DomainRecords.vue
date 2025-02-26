@@ -1034,7 +1034,7 @@ const getMonitorColor = (days) => {
                     v-model:value="searchForm.type"
                     allow-clear
                     placeholder="解析类型"
-                    style="width: 160px"
+                    style="width: 100px"
                 >
                     <a-select-option
                         v-for="(i, index) in RecordTypes"
@@ -1044,11 +1044,11 @@ const getMonitorColor = (days) => {
                     </a-select-option
                     >
                 </a-select>
-                <a-select
+                <a-select v-if="['ali', 'tencent', 'huawei', 'west', 'volcengine'].includes(nowDomainInfo.cloud)"
                     v-model:value="searchForm.status"
                     allow-clear
                     placeholder="解析状态"
-                    style="width: 120px"
+                    style="width: 100px"
                 >
                     <a-select-option value="true">启用</a-select-option>
                     <a-select-option value="false">暂停</a-select-option>
@@ -1056,7 +1056,7 @@ const getMonitorColor = (days) => {
                 <a-input-search
                     v-model:value="searchForm.keyword"
                     placeholder="输入关键字检索"
-                    style="width: 200px"
+                    style="width: 160px"
                 ></a-input-search>
                 <a-checkbox v-model:checked="searchForm.isMonitoring">
                     监控中
