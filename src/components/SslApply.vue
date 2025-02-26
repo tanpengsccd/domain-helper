@@ -390,6 +390,25 @@ const acmeDo = async ({sslId, isOld = false, callback = null}) => {
 
 const handleOk = async () => {
 
+
+    // 检查证书厂商，如果是zerossl 或者 google 要确保已经配置好
+    if (form.ca === "zerossl" && (!(sysConfig.ca.zerossl_hmacKey && sysConfig.ca.zerossl_kid))) {
+        notification.error({
+            message: 'ZeroSSL 未配置',
+            description: '请前往系统设置中配置 ZeroSSL 的 kid 和 hmacKey',
+            duration: 5
+        });
+        return;
+    }
+    if (form.ca === "google" && (!(sysConfig.ca.google_hmacKey && sysConfig.ca.google_kid && sysConfig.ca.google_proxy))) {
+        notification.error({
+            message: 'Google 未配置',
+            description: '请前往系统设置中配置 Google 的 kid 和 hmacKey 及 代理',
+            duration: 5
+        });
+        return;
+    }
+
     if (okText.value === "去验证") {
         open.value = false;
         await router.push({name: 'SslRecords', query: {mode: 'doing'}});
@@ -448,7 +467,6 @@ const handleOk = async () => {
     for (const rootDomain in domainGroups) {
         const domains = domainGroups[rootDomain];
         const hasWildcard = domains.some(d => d.sub === '*' || d.sub === '*.');
-        const hasRoot = domains.some(d => d.sub === '@');
         const specificDomains = domains.filter(d => d.sub !== '*' && d.sub !== '*.' && d.sub !== '@');
 
         if (hasWildcard && specificDomains.length > 0) {
@@ -457,19 +475,6 @@ const handleOk = async () => {
                 description: h("div", null, [
                     h("p", null, `${rootDomain} 下不能同时包含泛域名和具体子域名`),
                     h("p", null, "例如：*.example.com 和 sub.example.com 不能同时存在"),
-                ]),
-                duration: 10
-            });
-            return;
-        }
-
-        // 检查根域名与根的泛域名冲突
-        if (hasWildcard && hasRoot) {
-            notification.error({
-                message: '域名冲突',
-                description: h("div", null, [
-                    h("p", null, `${rootDomain} 不能同时申请根域名和泛域名`),
-                    h("p", null, "例如：example.com 和 *.example.com 不能同时存在"),
                 ]),
                 duration: 10
             });
@@ -508,7 +513,6 @@ const handleOk = async () => {
 
                 domainCloud[rootDomain] = account_key;
                 try {
-                    await dnsService.deleteAcmeRecord(rootDomain, challenge.domain);
                     const recordData = {
                         type: "TXT",
                         name: `_acme-challenge.${challenge.domain}`.replace(`.${rootDomain}`, ""),
