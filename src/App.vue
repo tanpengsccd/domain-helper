@@ -2,6 +2,7 @@
 import Likeplugin from "@/components/Likeplugin.vue";
 import SslApply from "@/components/SslApply.vue";
 import SslPush from "@/components/SslPush.vue";
+import SslDetail from "@/components/SslDetail.vue";
 import { useThemeStore } from '@/stroes/themeStore.js';
 import { getUnreadCount } from "@/utils/notification";
 import { monitorSSL } from "@/utils/sslMonitor";
@@ -196,6 +197,8 @@ onUnmounted(() => {
                 <SslApply @openapi="openSSL"/>
                 <!-- 证书推送 -->
                 <SslPush/>
+                <!-- 证书详情 -->
+                <SslDetail/>
                 <Likeplugin ref="likePlugin"/>
             </div>
 

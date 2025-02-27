@@ -19,6 +19,7 @@ import {
 import {useRouter, useRoute} from 'vue-router';
 import {SSL_STATUS, getStatusText, getStatusColor, getAllDoingSslRecord} from '@/utils/sslStatus'
 import {getDnsService} from "@/service/DnsService";
+import SslDetail from './SslDetail.vue';
 
 const {useToken} = theme;
 const {token} = useToken()
@@ -291,9 +292,9 @@ const handleMenuClick = (key, record) => {
             targetDomains,
         })
     } else if (key === 'detail') {
-        console.log(record)
-        const res = parseCertificate(record.cert)
-        console.log(JSON.stringify(res));
+        const certInfo = parseCertificate(record.cert);
+        // 使用独立组件显示证书详情
+        proxy.$eventBus.emit("open-ssl-detail", certInfo);
     }
 }
 
