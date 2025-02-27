@@ -96,11 +96,6 @@ const sslApply = (item) => {
 }
 
 const monitorDomain = (item) => {
-    // proxy.$eventBus.emit("open-ssl-monitor", {
-    //     domain: item.domain,
-    //     cloud: item.cloud,
-    //     account_key: item.account_key
-    // })
     Modal.confirm({
         title: 'SSL监控',
         content: h('div', {}, [

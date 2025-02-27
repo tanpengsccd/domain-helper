@@ -49,9 +49,12 @@ const SILENCE_PERIODS = {
 };
 
 async function getDnsRecord(hostname) {
+    // 如果hostname包含端口号，需要去除端口号再进行DNS解析
+    const hostnameWithoutPort = hostname.split(':')[0];
+
     try {
         // 尝试获取 A 记录
-        const aRecords = await resolveA(hostname);
+        const aRecords = await resolveA(hostnameWithoutPort);
         if (aRecords && aRecords.length > 0) {
             return {type: 'A', address: aRecords[0]};
         }
@@ -61,7 +64,7 @@ async function getDnsRecord(hostname) {
 
     try {
         // 尝试获取 CNAME 记录
-        const cnameRecords = await resolveCNAME(hostname);
+        const cnameRecords = await resolveCNAME(hostnameWithoutPort);
         if (cnameRecords && cnameRecords.length > 0) {
             return {type: 'CNAME', address: cnameRecords[0]};
         }
@@ -71,7 +74,7 @@ async function getDnsRecord(hostname) {
 
     try {
         // 尝试获取 AAAA 记录
-        const aaaaRecords = await resolveAAAA(hostname);
+        const aaaaRecords = await resolveAAAA(hostnameWithoutPort);
         if (aaaaRecords && aaaaRecords.length > 0) {
             return {type: 'AAAA', address: aaaaRecords[0]};
         }
@@ -80,7 +83,7 @@ async function getDnsRecord(hostname) {
     }
 
     // 如果没有找到任何记录
-    throw new Error(`没有找到任何DNS记录: ${hostname}`);
+    throw new Error(`没有找到任何DNS记录: ${hostnameWithoutPort}`);
 }
 
 
@@ -153,7 +156,11 @@ export async function addSslMonitor(obj, isEdit = false) {
     const parsedUrl = new xUrl.URL(url);
     const port = parsedUrl.port || 443;
     uri = port === 443 ? parsedUrl.hostname : `${parsedUrl.hostname}:${port}`;
-    domain = domain || psl.get(uri);
+
+    // 获取域名时，需要使用不带端口号的主机名
+    const hostnameWithoutPort = parsedUrl.hostname;
+    domain = domain || psl.get(hostnameWithoutPort);
+
     const key = `${sslMonitorPrefix}/${domain}/${uri}`;
     let sub = parsedUrl.hostname === domain ? '@' : parsedUrl.hostname.replace(`.${domain}`, '');
 
@@ -261,38 +268,96 @@ export function getAllSslMonitor(domian = "") {
 export async function batchAddSslMonitorLogic(urls, edit = false) {
     const op = edit ? '更新' : '添加';
     const hide = message.loading(`正在${op} ${urls.length} 条记录`, 0);
-    const result = await batchAddSslMonitor(urls);
+    const addRes = await batchAddSslMonitor(urls);
     hide()
-    // 处理操作结果
-    if (result.successCount > 0) {
-        message.success(`成功${op} ${result.successCount} 条记录`);
-    }
-
-    if (result.errorCount > 0) {
-        const errorMessages = result.errorUrls.map(error =>
-            h('div', {}, [
-                h('span', {
+    // 根据结果显示适当的消息
+    if (addRes.successCount > 0 && addRes.errorCount === 0) {
+        message.success(`成功添加 ${addRes.successCount} 个域名监控`);
+    } else if (addRes.successCount > 0 && addRes.errorCount > 0) {
+        Modal.info({
+            title: '部分域名添加成功',
+            content: h('div', null, [
+                h('div', {
                     style: {
-                        color: 'red',
-                        marginBottom: '10px'
+                        padding: '12px 16px',
+                        backgroundColor: '#f6ffed',
+                        border: '1px solid #b7eb8f',
+                        borderRadius: '4px',
+                        marginBottom: '12px'
                     }
-                }, error.uri),
-                h('br'),
-                h('span', null, error.error.message || '未知错误'),
-                h('br'), h('br'),
-            ])
-        );
+                }, [
+                    h('div', {style: {display: 'flex', alignItems: 'center'}}, [
+                        h('span', {
+                            style: {
+                                color: '#52c41a',
+                                fontSize: '16px',
+                                marginRight: '8px',
+                                fontWeight: 'bold'
+                            }
+                        }, '🎉'),
+                        h('span', {style: {color: '#52c41a', fontWeight: 'bold'}},
+                            `成功添加 ${addRes.successCount} 个域名监控`
+                        )
+                    ])
+                ]),
+                h('p', null, `${addRes.errorCount} 个域名添加失败`),
+                h('div', {style: {maxHeight: '200px', overflow: 'auto', marginTop: '10px'}},
+                    h('div', {style: {border: '1px solid #f0f0f0', borderRadius: '4px'}},
+                        addRes.errorUrls.map((item, index) =>
+                            h('div', {
+                                style: {
+                                    padding: '8px 12px',
+                                    borderBottom: index < addRes.errorUrls.length - 1 ? '1px solid #f0f0f0' : 'none',
+                                    backgroundColor: index % 2 === 0 ? '#fafafa' : '#fff'
+                                }
+                            }, [
+                                h('div', {style: {fontWeight: 'bold', marginBottom: '4px'}}, item.uri),
+                                h('div', {style: {color: '#ff4d4f', fontSize: '13px'}},
+                                    item.error.message || '无法连接或证书无效'
+                                )
+                            ])
+                        )
+                    )
+                )
+            ]),
+            onOk() {
+
+            }
+        });
+    } else if (addRes.errorCount > 0) {
         Modal.error({
-            title: `${result.errorCount} 条记录${op}失败`,
-            content: h('div', null, errorMessages)
+            title: '添加失败',
+            content: h('div', null, [
+                h('p', null, `${addRes.errorCount} 个域名添加失败`),
+                h('div', {style: {maxHeight: '200px', overflow: 'auto', marginTop: '10px'}},
+                    h('div', {style: {border: '1px solid #f0f0f0', borderRadius: '4px'}},
+                        addRes.errorUrls.map((item, index) =>
+                            h('div', {
+                                style: {
+                                    padding: '8px 12px',
+                                    borderBottom: index < addRes.errorUrls.length - 1 ? '1px solid #f0f0f0' : 'none',
+                                    backgroundColor: index % 2 === 0 ? '#fafafa' : '#fff'
+                                }
+                            }, [
+                                h('div', {style: {fontWeight: 'bold', marginBottom: '4px'}}, item.uri),
+                                h('div', {style: {color: '#ff4d4f', fontSize: '13px'}},
+                                    item.error.message || '无法连接或证书无效'
+                                )
+                            ])
+                        )
+                    )
+                )
+            ])
         });
     }
 }
 
 // 检测域名是否被监控了，如果被监控了，重新获取证书信息
 export async function updateOneDomainMonitor(domain) {
+    // 处理可能包含端口号的域名
+    const domainWithoutPort = domain.split(':')[0];
     // 获取根域名
-    const rootDomain = psl.get(domain);
+    const rootDomain = psl.get(domainWithoutPort);
     const key = `${sslMonitorPrefix}/${rootDomain}/${domain}`;
     const data = utools.dbStorage.getItem(key);
     if (data) {
