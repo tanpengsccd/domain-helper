@@ -93,7 +93,7 @@ const getTagIcon = (type) => {
         v-model:open="open"
         :title="null"
         :footer="null"
-        :width="800"
+        :width="750"
         :bodyStyle="{ padding: '0' }"
         @close="handleClose"
         destroyOnClose
@@ -137,7 +137,7 @@ const getTagIcon = (type) => {
 
             <!-- 内容区域 -->
             <div class="ssl-detail-content">
-                <a-tabs default-active-key="1">
+                <a-tabs default-active-key="1" size="small">
                     <!-- 主题信息 -->
                     <a-tab-pane key="1" tab="主题信息">
                         <div class="ssl-detail-section">
@@ -166,7 +166,7 @@ const getTagIcon = (type) => {
                             </div>
                         </div>
 
-                        <Divider/>
+                        <Divider style="margin: 8px 0" />
 
                         <div class="ssl-detail-section">
                             <div class="ssl-detail-section-header">
@@ -202,7 +202,7 @@ const getTagIcon = (type) => {
 
                                 <div class="ssl-detail-label">类别归档:</div>
                                 <div class="ssl-detail-value">
-                                    <a-tag :color="getCertTypeColor(certInfo.info?.cert_belong)">
+                                    <a-tag :color="getCertTypeColor(certInfo.info?.cert_belong)" class="compact-tag">
                                         {{ certInfo.info?.cert_belong || '-' }}
                                     </a-tag>
                                 </div>
@@ -213,7 +213,7 @@ const getTagIcon = (type) => {
                                 <div class="ssl-detail-label">用途:</div>
                                 <div class="ssl-detail-value">
                                     <a-tag v-for="(purpose, index) in certInfo.info?.purposes" :key="index"
-                                           style="margin: 2px">
+                                           class="compact-tag" style="margin: 1px 2px">
                                         {{ purpose }}
                                     </a-tag>
                                 </div>
@@ -286,7 +286,7 @@ const getTagIcon = (type) => {
                             </div>
                         </div>
 
-                        <Divider/>
+                        <Divider style="margin: 8px 0" />
 
                         <div class="ssl-detail-section">
                             <div class="ssl-detail-section-header">
@@ -313,7 +313,7 @@ const getTagIcon = (type) => {
 
             <!-- 底部 -->
             <div class="ssl-detail-footer">
-                <a-button type="primary" @click="handleClose">关闭</a-button>
+                <a-button type="primary" size="small" @click="handleClose">关闭</a-button>
             </div>
         </div>
     </Modal>
@@ -333,7 +333,7 @@ const getTagIcon = (type) => {
 .ssl-detail-header {
     display: flex;
     align-items: center;
-    padding: 20px;
+    padding: 12px 16px;
     color: white;
     position: relative;
     overflow: hidden;
@@ -361,8 +361,8 @@ const getTagIcon = (type) => {
     }
 
     .ssl-detail-header-icon {
-        font-size: 38px;
-        margin-right: 16px;
+        font-size: 28px;
+        margin-right: 12px;
         filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
         transition: transform 0.3s ease;
 
@@ -377,9 +377,9 @@ const getTagIcon = (type) => {
         h2 {
             margin: 0;
             color: white;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
             word-break: break-all;
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
             letter-spacing: 0.5px;
@@ -388,7 +388,7 @@ const getTagIcon = (type) => {
         .ssl-detail-header-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 4px;
             animation: fadeIn 0.5s ease-out;
 
             @keyframes fadeIn {
@@ -404,25 +404,25 @@ const getTagIcon = (type) => {
 
             .ssl-tag {
                 border: none;
-                font-size: 12px;
+                font-size: 11px;
                 font-weight: 500;
-                padding: 1px 8px;
+                padding: 0 6px;
                 height: auto;
-                line-height: 20px;
-                border-radius: 4px;
-                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+                line-height: 18px;
+                border-radius: 3px;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
                 transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
                 margin-right: 0;
 
                 :deep(.anticon) {
-                    margin-right: 4px;
-                    font-size: 12px;
+                    margin-right: 3px;
+                    font-size: 11px;
                     vertical-align: -0.125em;
                 }
 
                 &:hover {
-                    transform: translateY(-2px);
-                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+                    transform: translateY(-1px);
+                    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
                 }
             }
         }
@@ -431,51 +431,55 @@ const getTagIcon = (type) => {
 
 .ssl-detail-content {
     flex: 1;
-    padding: 16px;
+    padding: 10px 12px;
     overflow-y: auto;
-    max-height: 60vh;
+    max-height: 65vh;
     background-color: v-bind('token.colorBgContainer');
     color: v-bind('token.colorText');
 
     :deep(.ant-tabs-nav) {
-        margin-bottom: 12px;
+        margin-bottom: 8px;
+    }
+    
+    :deep(.ant-tabs-tab) {
+        padding: 6px 12px;
     }
 }
 
 .ssl-detail-section {
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 
     .ssl-detail-section-header {
         display: flex;
         align-items: center;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: 500;
-        margin-bottom: 12px;
+        margin-bottom: 8px;
         color: v-bind('token.colorTextHeading');
 
         .anticon {
-            margin-right: 8px;
-            font-size: 16px;
+            margin-right: 6px;
+            font-size: 14px;
         }
     }
 }
 
 .ssl-detail-grid {
     display: grid;
-    grid-template-columns: 110px 1fr;
-    row-gap: 10px;
-    column-gap: 12px;
+    grid-template-columns: 90px 1fr;
+    row-gap: 6px;
+    column-gap: 8px;
 }
 
 .ssl-detail-label {
     color: v-bind('token.colorTextSecondary');
-    font-size: 13px;
-    line-height: 20px;
+    font-size: 12px;
+    line-height: 18px;
 }
 
 .ssl-detail-value {
-    font-size: 13px;
-    line-height: 20px;
+    font-size: 12px;
+    line-height: 18px;
     word-break: break-all;
     color: v-bind('token.colorText');
 
@@ -495,38 +499,46 @@ const getTagIcon = (type) => {
     }
 }
 
+.compact-tag {
+    font-size: 11px;
+    padding: 0 4px;
+    height: auto;
+    line-height: 16px;
+    border-radius: 2px;
+}
+
 .ssl-detail-alt-names {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
-    padding: 6px 0;
+    gap: 4px;
+    padding: 4px 0;
 
     .alt-name-tag {
         cursor: pointer;
         transition: all 0.2s;
         border: none;
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 500;
-        padding: 1px 8px;
+        padding: 0 6px;
         height: auto;
-        line-height: 20px;
+        line-height: 18px;
 
         :deep(.anticon) {
-            margin-right: 4px;
-            font-size: 12px;
+            margin-right: 3px;
+            font-size: 11px;
             vertical-align: -0.125em;
         }
 
         &:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
     }
 
     .empty-data {
         color: v-bind('token.colorTextSecondary');
-        font-size: 13px;
-        padding: 12px 0;
+        font-size: 12px;
+        padding: 8px 0;
         text-align: center;
         width: 100%;
     }
@@ -535,7 +547,7 @@ const getTagIcon = (type) => {
 .ssl-detail-footer {
     display: flex;
     justify-content: flex-end;
-    padding: 12px 16px;
+    padding: 8px 12px;
     border-top: 1px solid v-bind('token.colorBorderSecondary');
     background-color: v-bind('token.colorBgContainer');
 }
