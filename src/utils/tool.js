@@ -5,7 +5,84 @@ import psl from 'psl';
 import {a} from "./salt.js";
 
 const dns = window.xDns
+import * as x509 from '@peculiar/x509'
 
+const crypto = window.xcrypto
+const Buffer = window.xBuffer
+
+// 格式化utc时间为本地时间
+export function formatDateLocal(date) {
+    const year = date.getFullYear(); // 本地年
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // 本地月
+    const day = String(date.getDate()).padStart(2, '0'); // 本地日
+    const hours = String(date.getHours()).padStart(2, '0'); // 本地时
+    const minutes = String(date.getMinutes()).padStart(2, '0'); // 本地分
+    const seconds = String(date.getSeconds()).padStart(2, '0'); // 本地秒
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
+export function parseCertificate(certString) {
+    const cert = new x509.X509Certificate(certString);
+    const derBuffer = Buffer.from(cert.rawData);
+    // 计算SHA1指纹
+    const sha1 = crypto.createHash('sha1')
+        .update(derBuffer)
+        .digest('hex')
+        .toUpperCase()
+        .match(/.{2}/g)
+        .join(':');
+
+// 计算SHA256指纹
+    const sha256 = crypto.createHash('sha256')
+        .update(derBuffer)
+        .digest('hex')
+        .toUpperCase()
+        .match(/.{2}/g)
+        .join(':');
+
+    const certJson = JSON.parse(JSON.stringify(cert));
+    const subject = transformCertFormat(certJson, 'subjectName');
+    const issuer = transformCertFormat(certJson, 'issuerName');
+    const keyStrength = cert.publicKeyModulus ? cert.publicKeyModulus.length * 8 : 'unknown';
+    // 计算天数
+    const validity = Math.floor((cert.notAfter - cert.notBefore) / (1000 * 60 * 60 * 24));
+    return {
+        subject: {
+            commonName: subject["CN"] || "",
+            country: subject["C"] || "",
+            state: subject["ST"] || "",
+            locality: subject["L"] || "",
+            organization: subject["O"] || "",
+            organizationalUnit: subject["OU"] || "",
+        },
+        issuer: {
+            commonName: issuer["CN"] || "",
+            country: issuer["C"] || "",
+            organization: issuer["O"] || "",
+        },
+        info: {
+            cert_belong: getCertificateType(cert), // 认证类型
+            serialNumber: cert.serialNumber,
+            ...getCertType(cert), // 证书 用途
+            public_key: certJson.publicKey.algorithm.name, // 密钥类型
+            public_key_size: certJson.publicKey.algorithm.namedCurve, // 密钥强度
+            signatureAlgorithm: certJson.signatureAlgorithm.hash.name, // 签名算法
+            cer_signture: Buffer.from(cert.signature).toString('hex'), // 证书签名
+            notBefore: formatDateLocal(cert.notBefore),
+            notAfter: formatDateLocal(cert.notAfter),
+            // 有效期
+            validity: validity,
+            sha1Fingerprint: sha1,
+            sha2Fingerprint: sha256,
+            // 备用名
+            altNames: certJson.extensions.filter(e => e.type === '2.5.29.17')[0].names.map(s => {
+                return s.value;
+            }),
+            caUrl: certJson.extensions.filter(e => e.type === '1.3.6.1.5.5.7.1.1')[0].caIssuers[0].value,
+            ocsp: certJson.extensions.filter(e => e.type === '1.3.6.1.5.5.7.1.1')[0].ocsp[0].value,
+        },
+    };
+}
 
 import confetti from 'canvas-confetti';
 import {TcpmkDnsTool} from "@/utils/TcpmkDnsTool";
@@ -335,4 +412,116 @@ export function getRootDomain(domain) {
 
 export function goUrl(url) {
     utools.shellOpenExternal(url);
+}
+
+const EV_OIDS = new Set([
+    '2.16.840.1.114412.2.1', // DigiCert EV
+    '1.3.6.1.4.1.34697.2.1', // GlobalSign EV
+    '1.3.6.1.4.1.14370.1.6', // GeoTrust EV
+]);
+
+function getCertificateType(cert) {
+    try {
+        // 1. 检查扩展字段中的策略 OID
+        const policies = cert.extensions
+            .find(ext => ext.name === 'Certificate Policies')
+            ?.value.match(/(\d+\.)+\d+/g) || [];
+        // 判断 EV（优先级最高）
+        if (policies.some(oid => EV_OIDS.has(oid))) {
+            return 'EV';
+        }
+        // 判断 OV/DV 的标准策略 OID
+        if (policies.includes('2.23.140.1.2.2')) {
+            return 'OV';
+        } else if (policies.includes('2.23.140.1.2.1')) {
+            return 'DV';
+        }
+        // 2. 回退：检查主题字段中的组织信息
+        const hasOrganization = cert.subject.includes('O=');
+        return hasOrganization ? 'OV' : 'DV';
+    } catch (error) {
+        console.error('证书解析失败:', error);
+        return 'Unknown';
+    }
+}
+
+function getCertType(cert) {
+    // 判断证书类型
+    const isCA = cert.extensions.filter(ext => 'BasicConstraintsExtension' === ext.constructor.name)[0].ca;
+    const keyUsages = cert.extensions.filter(ext => 'ExtendedKeyUsageExtension' === ext.constructor.name)[0]["usages"] || [];
+    // 类型判断逻辑
+    let certType = '其他证书';
+    if (!isCA && keyUsages.includes(x509.ExtendedKeyUsage.serverAuth)) {
+        certType = '服务器证书';
+    } else if (isCA) {
+        certType = 'CA证书';
+    }
+    // 提取证书用途
+    /*
+        serverAuth = "1.3.6.1.5.5.7.3.1",
+    clientAuth = "1.3.6.1.5.5.7.3.2",
+    codeSigning = "1.3.6.1.5.5.7.3.3",
+    emailProtection = "1.3.6.1.5.5.7.3.4",
+    timeStamping = "1.3.6.1.5.5.7.3.8",
+    ocspSigning = "1.3.6.1.5.5.7.3.9"
+     */
+    const purposes = [];
+    keyUsages
+        .map(usage => {
+            switch (usage) {
+                case x509.ExtendedKeyUsage.serverAuth:
+                    purposes.push('serverAuth');
+                    break;
+                case x509.ExtendedKeyUsage.clientAuth:
+                    purposes.push('clientAuth');
+                    break
+                case x509.ExtendedKeyUsage.codeSigning:
+                    purposes.push('codeSigning');
+                    break;
+                case x509.ExtendedKeyUsage.emailProtection:
+                    purposes.push('emailProtection');
+                    break;
+                case x509.ExtendedKeyUsage.timeStamping:
+                    purposes.push('timeStamping');
+                    break;
+                case x509.ExtendedKeyUsage.ocspSigning:
+                    purposes.push('ocspSigning');
+                    break;
+                default:
+                    return null;
+            }
+        });
+    return {
+        certType,
+        purposes,
+    };
+}
+
+function transformCertFormat(input, key) {
+    // 创建累积结果字典
+    const accumulator = new Map();
+
+    // 遍历所有subject条目
+    (input?.[key] || []).forEach(subject => {
+        // 遍历每个字段
+        Object.entries(subject || {}).forEach(([field, values]) => {
+            // 标准化为数组格式
+            const normalized = Array.isArray(values) ? values : [values];
+
+            // 过滤空值并累积结果
+            normalized.filter(Boolean).forEach(value => {
+                const current = accumulator.get(field) || new Set();
+                current.add(value);
+                accumulator.set(field, current);
+            });
+        });
+    });
+
+    // 转换为最终结果对象
+    return Array.from(accumulator.entries()).reduce((result, [field, values]) => {
+        // 自动展开单元素数组
+        const finalValues = Array.from(values);
+        result[field] = finalValues.length > 1 ? finalValues : finalValues[0];
+        return result;
+    }, {});
 }

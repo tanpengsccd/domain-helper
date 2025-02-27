@@ -14,7 +14,7 @@ import {
     xcopyText,
     exportSSL,
     getSomeSsl
-    , getItem, getRootDomain
+    , getItem, getRootDomain, parseCertificate
 } from "@/utils/tool";
 import {useRouter, useRoute} from 'vue-router';
 import {SSL_STATUS, getStatusText, getStatusColor, getAllDoingSslRecord} from '@/utils/sslStatus'
@@ -290,6 +290,10 @@ const handleMenuClick = (key, record) => {
         proxy.$eventBus.emit("open-ssl-renew", {
             targetDomains,
         })
+    } else if (key === 'detail') {
+        console.log(record)
+        const res = parseCertificate(record.cert)
+        console.log(JSON.stringify(res));
     }
 }
 
@@ -556,6 +560,12 @@ const deleteApplyRecord = async (record) => {
                                             <a-space size="small">
                                                 <HistoryOutlined/>
                                                 续签证书
+                                            </a-space>
+                                        </a-menu-item>
+                                        <a-menu-item key="detail">
+                                            <a-space size="small">
+                                                <HistoryOutlined/>
+                                                证书详情
                                             </a-space>
                                         </a-menu-item>
                                         <a-menu-item key="deleteSSL" danger>
