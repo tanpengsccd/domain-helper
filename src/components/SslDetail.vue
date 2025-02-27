@@ -12,7 +12,7 @@ import {
 import {xcopyText} from '@/utils/tool';
 
 const props = defineProps({
-    visible: {
+    open: {
         type: Boolean,
         default: false
     },
@@ -22,17 +22,17 @@ const props = defineProps({
     }
 });
 
-const emit = defineEmits(['update:visible', 'close']);
+const emit = defineEmits(['update:open', 'close']);
 
 const {useToken} = theme;
 const {token} = useToken();
 
-const visible = ref(false);
+const open = ref(false);
 const certInfo = ref({});
 
-// 监听visible变化
-watch(() => props.visible, (val) => {
-    visible.value = val;
+// 监听open变化
+watch(() => props.open, (val) => {
+    open.value = val;
 });
 
 // 监听certInfo变化
@@ -42,8 +42,8 @@ watch(() => props.certInfo, (val) => {
 
 // 关闭弹窗
 const handleClose = () => {
-    visible.value = false;
-    emit('update:visible', false);
+    open.value = false;
+    emit('update:open', false);
     emit('close');
 };
 
@@ -52,7 +52,7 @@ const {proxy} = getCurrentInstance();
 onMounted(() => {
     proxy.$eventBus.on("open-ssl-detail", (info) => {
         certInfo.value = info;
-        visible.value = true;
+        open.value = true;
     });
 });
 
@@ -90,13 +90,14 @@ const getTagIcon = (type) => {
 
 <template>
     <Modal
-        v-model:visible="visible"
+        v-model:open="open"
         :title="null"
         :footer="null"
         :width="800"
         :bodyStyle="{ padding: '0' }"
         @close="handleClose"
         destroyOnClose
+        :closable="false"
     >
         <div class="ssl-detail-container">
             <!-- 头部 -->

@@ -413,7 +413,7 @@ const handleImportChange = (value) => {
                 </a-space>
             </a-card>
 
-            <a-empty style="margin-top: 20vh;" v-if="filterPushplatform.length === 0">
+            <a-empty style="margin: 20vh auto 0;" v-if="filterPushplatform.length === 0">
                 <template #description>
                     <p :style="{ color: token.colorTextLabel }">
                         暂无推送平台信息
