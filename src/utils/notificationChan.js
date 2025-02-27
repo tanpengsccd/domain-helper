@@ -38,6 +38,43 @@ export const sendWecomMessage = async (url, data) => {
     }
 };
 
+/**console
+ * 发送飞书机器人消息
+ * @param url
+ * @param data
+ * @returns {Promise<unknown>}
+ */
+export const sendFeishuMessage = async (url, data) => {
+    const urlObj = new URL(url);
+    const options = {
+        hostname: urlObj.hostname,
+        path: urlObj.pathname + urlObj.search,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    const postData = JSON.stringify({
+        msg_type: 'text',
+        content: {
+            text: `${data.title}\n${data.content}`
+        }
+    });
+
+    try {
+        const response = await httpsRequest(options, postData, true);
+        if (response.StatusCode !== 0) {
+            throw new Error(response.errmsg || '发送失败');
+        }
+        return response;
+    } catch (error) {
+        console.error('飞书发送失败:', error);
+        throw error;
+    }
+};
+
+
 /**
  * 发送钉钉机器人消息
  * @param {string} url Webhook URL
@@ -183,7 +220,7 @@ export const sendCustomMessage = async (url, data) => {
 export const validateNotification = async (type, url) => {
     const testData = {
         title: '测试消息',
-        content:   ' 这是一条测试消息，用于验证推送渠道是否可用。' + "\n\n" + dayjs().format('YYYY-MM-DD HH:mm:ss')
+        content: ' 这是一条测试消息，用于验证推送渠道是否可用。' + "\n\n" + dayjs().format('YYYY-MM-DD HH:mm:ss')
     };
 
     try {
@@ -193,7 +230,7 @@ export const validateNotification = async (type, url) => {
         console.error('验证失败:', error);
         throw error;
     }
-}; 
+};
 
 
 export const sendNotification = async (type, url, data) => {
@@ -213,6 +250,9 @@ export const sendNotification = async (type, url, data) => {
             break;
         case 'custom':
             await sendCustomMessage(url, data);
+            break;
+        case 'feishu':
+            await sendFeishuMessage(url, data);
             break;
         default:
             throw new Error('不支持的通知类型');

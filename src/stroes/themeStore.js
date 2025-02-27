@@ -11,7 +11,8 @@ const defaultConfig = {
         dingtalk: '',
         serverChan: '',
         anPush: '',
-        custom: ''
+        custom: '',
+        feishu: "",
     },
     ssl: {
         dns_verify: 'one', // local 或者 local

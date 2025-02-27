@@ -106,7 +106,8 @@ const loadingStates = ref({
     dingtalk: false,
     serverChan: false,
     anPush: false,
-    custom: false
+    custom: false,
+    feishu: false,
 });
 
 const validateAndSave = async (type) => {
@@ -240,6 +241,23 @@ const getButtonText = (type) => {
                                     @click="validateAndSave('wechat')"
                                     style="width: 110px"
                                 >{{ getButtonText('wechat') }}
+                                </a-button>
+                            </a-input-group>
+                        </a-form-item>
+                        <a-form-item label="飞书机器人">
+                            <a-input-group compact>
+                                <a-input
+                                    v-model:value="config.notifications.feishu"
+                                    placeholder="请输入飞书机器人 Webhook URL"
+                                    style="width: calc(100% - 110px)"
+                                    allow-clear
+                                />
+                                <a-button
+                                    type="primary"
+                                    :loading="loadingStates.feishu"
+                                    @click="validateAndSave('feishu')"
+                                    style="width: 110px"
+                                >{{ getButtonText('feishu') }}
                                 </a-button>
                             </a-input-group>
                         </a-form-item>
