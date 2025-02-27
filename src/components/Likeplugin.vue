@@ -9,6 +9,7 @@ const activeKey = ref('1');
 
 // 模拟赞赏榜单数据，实际使用时应该从后端获取
 const donationList = ref([
+    {username: 'Ziu', channel: 'utools', amount: 8, time: "2025-02-27 15:41:40"},
     {username: '吖唔咪', channel: 'utools', amount: 8, time: "2025-02-22 18:08:58"},
     {username: 'linkFly', channel: 'utools', amount: 32, time: "2025-01-08 23:20:27"},
     {username: '二丫讲梵', channel: 'utools', amount: 8, time: "2024-12-12 15:23:58"},
