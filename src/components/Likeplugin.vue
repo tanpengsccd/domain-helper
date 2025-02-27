@@ -7,7 +7,6 @@ import {GithubOutlined, StarOutlined} from '@ant-design/icons-vue';
 const zanshang = ref(false);
 const activeKey = ref('1');
 
-// 模拟赞赏榜单数据，实际使用时应该从后端获取
 const donationList = ref([
     {username: 'Ziu', channel: 'utools', amount: 8, time: "2025-02-27 15:41:40"},
     {username: '吖唔咪', channel: 'utools', amount: 8, time: "2025-02-22 18:08:58"},
