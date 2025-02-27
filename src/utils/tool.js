@@ -3,9 +3,11 @@ import {message, notification} from "ant-design-vue";
 import JSZip from "jszip";
 import psl from 'psl';
 import {a} from "./salt.js";
+import * as x509 from '@peculiar/x509'
+import confetti from 'canvas-confetti';
+import {TcpmkDnsTool} from "@/utils/TcpmkDnsTool";
 
 const dns = window.xDns
-import * as x509 from '@peculiar/x509'
 
 const crypto = window.xcrypto
 const Buffer = window.xBuffer
@@ -83,9 +85,6 @@ export function parseCertificate(certString) {
         },
     };
 }
-
-import confetti from 'canvas-confetti';
-import {TcpmkDnsTool} from "@/utils/TcpmkDnsTool";
 
 function randomInRange(min, max) {
     return Math.random() * (max - min) + min;

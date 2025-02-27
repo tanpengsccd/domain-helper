@@ -3,9 +3,6 @@
 // 定义数据结构
 
 import {message, Modal} from "ant-design-vue";
-
-const sslMonitorPrefix = 'sslmonitor';
-
 /**
  * key = sslmonitor/domain/fulldomain
  * {
@@ -18,11 +15,16 @@ const sslMonitorPrefix = 'sslmonitor';
  *
  */
 import psl from 'psl';
+import {h} from "vue";
+import {addNotification} from "@/utils/notification";
+// 获取渠道通知配置
+import {useThemeStore} from '@/stroes/themeStore';
+import {sendNotification} from "@/utils/notificationChan";
+
+const sslMonitorPrefix = 'sslmonitor';
 
 const url = window.xUrl;
 const https = window.xhttps;
-import {h} from "vue";
-import {addNotification} from "@/utils/notification";
 
 const dns = window.xDns;
 const {promisify} = window.xUtil;
@@ -30,10 +32,6 @@ const {promisify} = window.xUtil;
 const resolveA = promisify(dns.resolve4);
 const resolveAAAA = promisify(dns.resolve6);
 const resolveCNAME = promisify(dns.resolveCname);
-
-// 获取渠道通知配置
-import {useThemeStore} from '@/stroes/themeStore';
-import {sendNotification} from "@/utils/notificationChan";
 
 // 定义常量配置
 const EXPIRY_THRESHOLDS = {
