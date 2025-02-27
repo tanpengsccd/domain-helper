@@ -296,7 +296,29 @@ const handleBatchAdd = async () => {
             Modal.info({
                 title: '部分域名添加成功',
                 content: h('div', null, [
-                    h('p', null, `成功添加 ${addRes.successCount} 个域名监控`),
+                    h('div', { 
+                        style: { 
+                            padding: '12px 16px', 
+                            backgroundColor: '#f6ffed', 
+                            border: '1px solid #b7eb8f', 
+                            borderRadius: '4px',
+                            marginBottom: '12px'
+                        } 
+                    }, [
+                        h('div', { style: { display: 'flex', alignItems: 'center' } }, [
+                            h('span', { 
+                                style: { 
+                                    color: '#52c41a', 
+                                    fontSize: '16px', 
+                                    marginRight: '8px',
+                                    fontWeight: 'bold'
+                                } 
+                            }, '✓'),
+                            h('span', { style: { color: '#52c41a', fontWeight: 'bold' } }, 
+                                `成功添加 ${addRes.successCount} 个域名监控`
+                            )
+                        ])
+                    ]),
                     h('p', null, `${addRes.errorCount} 个域名添加失败`),
                     h('div', { style: { maxHeight: '200px', overflow: 'auto', marginTop: '10px' } }, 
                         h('div', { style: { border: '1px solid #f0f0f0', borderRadius: '4px' } },
