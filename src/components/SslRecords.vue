@@ -6,7 +6,7 @@ import {
     SyncOutlined,
     DeleteOutlined,
     KeyOutlined, CopyOutlined,
-    ExclamationCircleOutlined, CloudUploadOutlined, HistoryOutlined, RetweetOutlined, VerifiedOutlined
+    ExclamationCircleOutlined, CloudUploadOutlined, HistoryOutlined, RetweetOutlined, VerifiedOutlined,InfoCircleOutlined
 } from "@ant-design/icons-vue";
 import {
     getAllDomains,
@@ -565,7 +565,7 @@ const deleteApplyRecord = async (record) => {
                                         </a-menu-item>
                                         <a-menu-item key="detail">
                                             <a-space size="small">
-                                                <HistoryOutlined/>
+                                                <InfoCircleOutlined />
                                                 证书详情
                                             </a-space>
                                         </a-menu-item>
