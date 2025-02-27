@@ -1,6 +1,6 @@
 <script setup>
 import {ref, onMounted, onBeforeUnmount, getCurrentInstance, watch} from 'vue';
-import {Modal, Tabs, theme, Divider, Tag} from 'ant-design-vue';
+import {Drawer, Tabs, theme, Divider, Tag, Button} from 'ant-design-vue';
 import {
     KeyOutlined,
     SafetyCertificateOutlined,
@@ -89,18 +89,17 @@ const getTagIcon = (type) => {
 </script>
 
 <template>
-    <Modal
+    <a-drawer
         v-model:open="open"
-        :title="null"
-        :footer="null"
+        :title="certInfo.subject?.commonName || '证书详情'"
         :width="800"
         :bodyStyle="{ padding: '0' }"
         @close="handleClose"
         destroyOnClose
-        :closable="false"
+        :closable="true"
+        placement="right"
     >
         <div class="ssl-detail-container">
-            <!-- 头部 -->
             <div class="ssl-detail-header" :style="{ backgroundColor: token.colorPrimary }">
                 <div class="ssl-detail-header-icon">
                     <SafetyCertificateOutlined/>
@@ -108,7 +107,7 @@ const getTagIcon = (type) => {
                 <div class="ssl-detail-header-content">
                     <h2>{{ certInfo.subject?.commonName || '证书详情' }}</h2>
                     <div class="ssl-detail-header-tags">
-                        <a-tag  :color="getCertTypeColor(certInfo.info?.cert_belong)" class="ssl-tag">
+                        <a-tag :color="getCertTypeColor(certInfo.info?.cert_belong)" class="ssl-tag">
                             <template #icon>
                                 <component :is="getTagIcon(certInfo.info?.cert_belong)"/>
                             </template>
@@ -135,10 +134,8 @@ const getTagIcon = (type) => {
                 </div>
             </div>
 
-            <!-- 内容区域 -->
             <div class="ssl-detail-content">
                 <a-tabs default-active-key="1">
-                    <!-- 主题信息 -->
                     <a-tab-pane key="1" tab="主题信息">
                         <div class="ssl-detail-section">
                             <div class="ssl-detail-section-header">
@@ -186,7 +183,6 @@ const getTagIcon = (type) => {
                         </div>
                     </a-tab-pane>
 
-                    <!-- 证书信息 -->
                     <a-tab-pane key="2" tab="证书信息">
                         <div class="ssl-detail-section">
                             <div class="ssl-detail-section-header">
@@ -259,7 +255,6 @@ const getTagIcon = (type) => {
                         </div>
                     </a-tab-pane>
 
-                    <!-- 备用名 -->
                     <a-tab-pane key="3" tab="备用名">
                         <div class="ssl-detail-section">
                             <div class="ssl-detail-section-header">
@@ -310,13 +305,14 @@ const getTagIcon = (type) => {
                     </a-tab-pane>
                 </a-tabs>
             </div>
-
-            <!-- 底部 -->
+        </div>
+        
+        <template #footer>
             <div class="ssl-detail-footer">
                 <a-button type="primary" @click="handleClose">关闭</a-button>
             </div>
-        </div>
-    </Modal>
+        </template>
+    </a-drawer>
 </template>
 
 <style scoped lang="scss">
@@ -325,9 +321,7 @@ const getTagIcon = (type) => {
     flex-direction: column;
     height: 100%;
     background-color: v-bind('token.colorBgContainer');
-    border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 2px 8px v-bind('token.colorBgElevated');
 }
 
 .ssl-detail-header {
@@ -433,7 +427,7 @@ const getTagIcon = (type) => {
     flex: 1;
     padding: 16px;
     overflow-y: auto;
-    max-height: 60vh;
+    max-height: calc(100vh - 200px);
     background-color: v-bind('token.colorBgContainer');
     color: v-bind('token.colorText');
 
@@ -536,7 +530,6 @@ const getTagIcon = (type) => {
     display: flex;
     justify-content: flex-end;
     padding: 12px 16px;
-    border-top: 1px solid v-bind('token.colorBorderSecondary');
     background-color: v-bind('token.colorBgContainer');
 }
 </style> 
