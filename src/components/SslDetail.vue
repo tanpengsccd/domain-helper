@@ -1,26 +1,17 @@
 <script setup>
 import {ref, onMounted, onBeforeUnmount, getCurrentInstance, watch} from 'vue';
-import {Drawer, Tabs, theme, Divider, Tag, Button} from 'ant-design-vue';
+import {theme, Divider} from 'ant-design-vue';
 import {
     KeyOutlined,
     SafetyCertificateOutlined,
     UserOutlined,
     GlobalOutlined,
     CheckCircleOutlined,
-    TagOutlined
+    TagOutlined,
 } from '@ant-design/icons-vue';
 import {xcopyText} from '@/utils/tool';
-
-const props = defineProps({
-    open: {
-        type: Boolean,
-        default: false
-    },
-    certInfo: {
-        type: Object,
-        default: () => ({})
-    }
-});
+import {debounce} from 'lodash-es';
+import {message, Modal} from "ant-design-vue";
 
 const emit = defineEmits(['update:open', 'close']);
 
@@ -29,16 +20,6 @@ const {token} = useToken();
 
 const open = ref(false);
 const certInfo = ref({});
-
-// // 监听open变化
-// watch(() => props.open, (val) => {
-//     open.value = val;
-// });
-//
-// // 监听certInfo变化
-// watch(() => props.certInfo, (val) => {
-//     certInfo.value = val;
-// });
 
 // 关闭弹窗
 const handleClose = () => {
@@ -49,11 +30,12 @@ const handleClose = () => {
 
 // 注册事件监听
 const {proxy} = getCurrentInstance();
+const openSslDetail = (info) => {
+    certInfo.value = info;
+    open.value = true;
+}
 onMounted(() => {
-    proxy.$eventBus.on("open-ssl-detail", (info) => {
-        certInfo.value = info;
-        open.value = true;
-    });
+    proxy.$eventBus.on("open-ssl-detail", openSslDetail);
 });
 
 onBeforeUnmount(() => {
@@ -134,7 +116,7 @@ const getTagIcon = (type) => {
                 </div>
             </div>
 
-            <div class="ssl-detail-content">
+            <div class="ssl-detail-content" ref="xbody">
                 <a-tabs default-active-key="1">
                     <a-tab-pane key="1" tab="主题信息">
                         <div class="ssl-detail-section">
@@ -306,7 +288,7 @@ const getTagIcon = (type) => {
                 </a-tabs>
             </div>
         </div>
-        
+
         <template #footer>
             <div class="ssl-detail-footer">
                 <a-button type="primary" @click="handleClose">关闭</a-button>
@@ -427,7 +409,6 @@ const getTagIcon = (type) => {
     flex: 1;
     padding: 16px;
     overflow-y: auto;
-    max-height: calc(100vh - 200px);
     background-color: v-bind('token.colorBgContainer');
     color: v-bind('token.colorText');
 

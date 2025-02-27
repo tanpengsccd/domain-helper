@@ -5,8 +5,14 @@ import {
     DownloadOutlined,
     SyncOutlined,
     DeleteOutlined,
-    KeyOutlined, CopyOutlined,
-    ExclamationCircleOutlined, CloudUploadOutlined, HistoryOutlined, RetweetOutlined, VerifiedOutlined,InfoCircleOutlined
+    KeyOutlined,
+    CopyOutlined,
+    ExclamationCircleOutlined,
+    CloudUploadOutlined,
+    HistoryOutlined,
+    RetweetOutlined,
+    VerifiedOutlined,
+    InfoCircleOutlined
 } from "@ant-design/icons-vue";
 import {
     getAllDomains,
@@ -16,6 +22,7 @@ import {
     getSomeSsl
     , getItem, getRootDomain, parseCertificate
 } from "@/utils/tool";
+import {debounce} from 'lodash-es';
 import {useRouter, useRoute} from 'vue-router';
 import {SSL_STATUS, getStatusText, getStatusColor, getAllDoingSslRecord} from '@/utils/sslStatus'
 import {getDnsService} from "@/service/DnsService";
@@ -181,11 +188,11 @@ const doingColumns = [
 const xbody = ref(null)
 const height = ref(0);
 let resizeObserver = null;
-const updateHeight = () => {
+const updateHeight = debounce(() => {
     if (xbody.value) {
         height.value = xbody.value.clientHeight - 56;
     }
-};
+}, 100);
 const {proxy} = getCurrentInstance();
 onMounted(() => {
     resizeObserver = new ResizeObserver(updateHeight);
@@ -259,7 +266,6 @@ const fixTargetDomains = (record) => {
         }
     })
 }
-
 const handleMenuClick = (key, record) => {
     if (key === 'pushSSL') {
         proxy.$eventBus.emit("open-ssl-push", record)
@@ -290,9 +296,8 @@ const handleMenuClick = (key, record) => {
         proxy.$eventBus.emit("open-ssl-renew", {
             targetDomains,
         })
-    } else if (key === 'detail') {
+    } else if (key === 'xdetail') {
         const certInfo = parseCertificate(record.cert);
-        // 使用独立组件显示证书详情
         proxy.$eventBus.emit("open-ssl-detail", certInfo);
     }
 }
@@ -562,9 +567,9 @@ const deleteApplyRecord = async (record) => {
                                                 续签证书
                                             </a-space>
                                         </a-menu-item>
-                                        <a-menu-item key="detail">
+                                        <a-menu-item key="xdetail">
                                             <a-space size="small">
-                                                <InfoCircleOutlined />
+                                                <InfoCircleOutlined/>
                                                 证书详情
                                             </a-space>
                                         </a-menu-item>

@@ -45,7 +45,6 @@ export function parseCertificate(certString) {
     const certJson = JSON.parse(JSON.stringify(cert));
     const subject = transformCertFormat(certJson, 'subjectName');
     const issuer = transformCertFormat(certJson, 'issuerName');
-    const keyStrength = cert.publicKeyModulus ? cert.publicKeyModulus.length * 8 : 'unknown';
     // 计算天数
     const validity = Math.floor((cert.notAfter - cert.notBefore) / (1000 * 60 * 60 * 24));
     return {
@@ -443,11 +442,10 @@ function getCertificateType(cert) {
         return 'Unknown';
     }
 }
-
-function getCertType(cert) {
+function getCertType(certJson) {
     // 判断证书类型
-    const isCA = cert.extensions.filter(ext => 'BasicConstraintsExtension' === ext.constructor.name)[0].ca;
-    const keyUsages = cert.extensions.filter(ext => 'ExtendedKeyUsageExtension' === ext.constructor.name)[0]["usages"] || [];
+    const isCA = certJson.extensions.filter(e => e.type === '2.5.29.19')[0].ca
+    const keyUsages = certJson.extensions.filter(e => e.type === '2.5.29.37')[0].usages || []
     // 类型判断逻辑
     let certType = '其他证书';
     if (!isCA && keyUsages.includes(x509.ExtendedKeyUsage.serverAuth)) {

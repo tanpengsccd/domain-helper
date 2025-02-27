@@ -361,7 +361,7 @@ const actionColumn = {
     // fixed: 'right',
     width: 110,
 };
-
+import { debounce } from 'lodash-es';
 const columns = computed(() => {
     const base = baseColumns;
     const special = nowDomainInfo.value.cloud_info.columns || [];
@@ -371,11 +371,11 @@ const columns = computed(() => {
 const xbody = ref(null);
 const height = ref(0);
 let resizeObserver = null;
-const updateHeight = () => {
+const updateHeight = debounce(() => {
     if (xbody.value) {
         height.value = xbody.value.clientHeight - 56;
     }
-};
+}, 100);
 onMounted(() => {
     resizeObserver = new ResizeObserver(updateHeight);
     if (xbody.value) {
