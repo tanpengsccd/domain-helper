@@ -372,7 +372,7 @@ export function getFullDomainByItem(item, domain = "") {
 
 export function exportSSL(item) {
     const zipFile = JSZip()
-    let prefix = item.subdomain
+    let prefix = item.domain
     // 检测如果域名是泛域名，那么证书文件名加上_wildcard 去掉 * 号
     if (prefix.startsWith("*.")) {
         prefix = prefix.replace("*.", "") + "_wildcard"

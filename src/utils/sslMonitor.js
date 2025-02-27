@@ -447,20 +447,12 @@ export async function monitorSSL(onNotifcation, onError) {
 
         // 如果配置了通知渠道，则发送通知
         if (config.notifications) {
-            const notificationChannels = {
-                wechat: config.notifications.wechat,
-                dingtalk: config.notifications.dingtalk,
-                serverChan: config.notifications.serverChan,
-                anPush: config.notifications.anPush,
-                custom: config.notifications.custom
-            };
-
+            const notificationChannels = config.notifications
             const promises = Object.entries(notificationChannels)
                 .filter(([_, value]) => value)
                 .map(([channel, config]) =>
                     sendNotification(channel, config, {title, content: plainTextContent})
                 );
-
             await Promise.all(promises);
             // 不关心通知结果
         }
