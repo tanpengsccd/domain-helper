@@ -29,8 +29,6 @@ onErrorCaptured((err, vm, info) => {
     return false;
 });
 
-
-const userEmail = utools.dbStorage.getItem("user_email") || ""
 const labelCol = {style: {width: '80px'}, span: 5};
 
 
@@ -603,8 +601,6 @@ const renderLoging = (msg, color = null) => {
 
 const renewCsr = reactive({csr: "", key: ""})
 const openModal = (domainInfo) => {
-
-
     if (Array.isArray(domainInfo)) {
         formDomains.value = domainInfo;
     } else if (typeof domainInfo === "object") {
@@ -618,7 +614,7 @@ const openModal = (domainInfo) => {
     successModal.value = false;
     confirmLoading.value = false;
     isDoing.value = false;
-    form.email = userEmail
+    form.email = utools.dbStorage.getItem("user_email") || ""
     steps.value = []
     okText.value = "开始申请"
     open.value = true;
@@ -635,7 +631,7 @@ const renewSsl = async (obj) => {
         confirmLoading.value = false;
         isDoing.value = false;
         formDomains.value = obj.targetDomains
-        form.email = userEmail
+        form.email = utools.dbStorage.getItem("user_email") || ""
         steps.value = []
         open.value = true;
         initAllDomains()
@@ -647,7 +643,7 @@ const renewSsl = async (obj) => {
         confirmLoading.value = false;
         isDoing.value = false;
         formDomains.value = obj.targetDomains
-        form.email = userEmail
+        form.email = utools.dbStorage.getItem("user_email") || ""
         steps.value = []
         open.value = true;
         initAllDomains()
@@ -813,6 +809,7 @@ const targetDomains = computed(() => {
                                     <div>支持多个域名打到一本证书</div>
                                     <div>最多支持 {{ sslDomainLimit }} 个域名</div>
                                     <div>根域名可以不同</div>
+                                    <div>支持泛域名与根域名同一本</div>
                                     <div>例： a.com *.b.com 可以用一本证书</div>
                                 </template>
                                 <QuestionCircleOutlined style="color:#aaaaaa"/>
