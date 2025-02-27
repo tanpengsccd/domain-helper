@@ -285,10 +285,70 @@ const handleBatchAdd = async () => {
 
     batchAddLoading.value = true;
     try {
-        await batchAddSslMonitor(domains);
-        message.success('添加成功');
-        batchAddVisible.value = false;
-        batchDomains.value = '';
+        const addRes = await batchAddSslMonitor(domains);
+        
+        // 根据结果显示适当的消息
+        if (addRes.successCount > 0 && addRes.errorCount === 0) {
+            message.success(`成功添加 ${addRes.successCount} 个域名监控`);
+            batchAddVisible.value = false;
+            batchDomains.value = '';
+        } else if (addRes.successCount > 0 && addRes.errorCount > 0) {
+            Modal.info({
+                title: '部分域名添加成功',
+                content: h('div', null, [
+                    h('p', null, `成功添加 ${addRes.successCount} 个域名监控`),
+                    h('p', null, `${addRes.errorCount} 个域名添加失败`),
+                    h('div', { style: { maxHeight: '200px', overflow: 'auto', marginTop: '10px' } }, 
+                        h('div', { style: { border: '1px solid #f0f0f0', borderRadius: '4px' } },
+                            addRes.errorUrls.map((item, index) => 
+                                h('div', { 
+                                    style: { 
+                                        padding: '8px 12px',
+                                        borderBottom: index < addRes.errorUrls.length - 1 ? '1px solid #f0f0f0' : 'none',
+                                        backgroundColor: index % 2 === 0 ? '#fafafa' : '#fff'
+                                    } 
+                                }, [
+                                    h('div', { style: { fontWeight: 'bold', marginBottom: '4px' } }, item.uri),
+                                    h('div', { style: { color: '#ff4d4f', fontSize: '13px' } }, 
+                                        item.error.message || '无法连接或证书无效'
+                                    )
+                                ])
+                            )
+                        )
+                    )
+                ]),
+                onOk() {
+                    batchAddVisible.value = false;
+                    batchDomains.value = '';
+                }
+            });
+        } else if (addRes.errorCount > 0) {
+            Modal.error({
+                title: '添加失败',
+                content: h('div', null, [
+                    h('p', null, `${addRes.errorCount} 个域名添加失败`),
+                    h('div', { style: { maxHeight: '200px', overflow: 'auto', marginTop: '10px' } }, 
+                        h('div', { style: { border: '1px solid #f0f0f0', borderRadius: '4px' } },
+                            addRes.errorUrls.map((item, index) => 
+                                h('div', { 
+                                    style: { 
+                                        padding: '8px 12px',
+                                        borderBottom: index < addRes.errorUrls.length - 1 ? '1px solid #f0f0f0' : 'none',
+                                        backgroundColor: index % 2 === 0 ? '#fafafa' : '#fff'
+                                    } 
+                                }, [
+                                    h('div', { style: { fontWeight: 'bold', marginBottom: '4px' } }, item.uri),
+                                    h('div', { style: { color: '#ff4d4f', fontSize: '13px' } }, 
+                                        item.error.message || '无法连接或证书无效'
+                                    )
+                                ])
+                            )
+                        )
+                    )
+                ])
+            });
+        }
+        
         getRecords();
     } catch (error) {
         message.error('添加失败：' + error.message);
