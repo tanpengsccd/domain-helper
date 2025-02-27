@@ -358,7 +358,7 @@ export function getDnsServer(domain) {
 export function getSomeSsl(days = 0) {
     const now = new Date().getTime();
     return getAllSslInfo().filter(item => {
-        return item.validTo - now < days * 24 * 60 * 60 * 1000;
+        return item.validTo - now <= days * 24 * 60 * 60 * 1000;
     })
 }
 

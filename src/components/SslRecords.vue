@@ -439,7 +439,7 @@ const deleteApplyRecord = async (record) => {
                 </a-radio-group>
                 <a-button type="primary" @click="handleApply">
                     <VerifiedOutlined/>
-                    申请证书
+                    申请
                 </a-button>
 
             </a-flex>
@@ -509,7 +509,7 @@ const deleteApplyRecord = async (record) => {
                                         }}</span> 天</span>
                                 </template>
                                 <template
-                                    v-else-if="getValidaDays(record.validTo) <= 10 && getValidaDays(record.validTo) > 0">
+                                    v-else-if="getValidaDays(record.validTo) <= 10 && getValidaDays(record.validTo) >= 0">
                                     <span class="validaDays">剩余 <span style="color: #f03e3e">{{
                                             getValidaDays(record.validTo)
                                         }}</span> 天</span>
