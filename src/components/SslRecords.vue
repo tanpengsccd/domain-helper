@@ -19,7 +19,6 @@ import {
 import {useRouter, useRoute} from 'vue-router';
 import {SSL_STATUS, getStatusText, getStatusColor, getAllDoingSslRecord} from '@/utils/sslStatus'
 import {getDnsService} from "@/service/DnsService";
-import SslDetail from './SslDetail.vue';
 
 const {useToken} = theme;
 const {token} = useToken()

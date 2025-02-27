@@ -30,15 +30,15 @@ const {token} = useToken();
 const open = ref(false);
 const certInfo = ref({});
 
-// 监听open变化
-watch(() => props.open, (val) => {
-    open.value = val;
-});
-
-// 监听certInfo变化
-watch(() => props.certInfo, (val) => {
-    certInfo.value = val;
-});
+// // 监听open变化
+// watch(() => props.open, (val) => {
+//     open.value = val;
+// });
+//
+// // 监听certInfo变化
+// watch(() => props.certInfo, (val) => {
+//     certInfo.value = val;
+// });
 
 // 关闭弹窗
 const handleClose = () => {
