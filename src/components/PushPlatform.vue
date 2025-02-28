@@ -44,7 +44,8 @@ const form = reactive({
         privateKey: "",
         certPath: "",
         keyPath: "",
-        restartCommand: ""
+        restartCommand: "",
+        beforePushCommand: "",
     }
 });
 
@@ -75,7 +76,8 @@ const changeCloud = (type) => {
                 privateKey: "",
                 certPath: "",
                 keyPath: "",
-                restartCommand: ""
+                restartCommand: "",
+                beforePushCommand: "",
             };
             authType.value = 'password';
             break;
@@ -142,7 +144,8 @@ const addPushplatform = () => {
         privateKey: "",
         certPath: "",
         keyPath: "",
-        restartCommand: ""
+        restartCommand: "",
+        beforePushCommand: "",
     };
     importPlatformId.value = undefined;
     keySwitch.value = true;
@@ -217,7 +220,8 @@ const clearSetting = () => {
         privateKey: "",
         certPath: "",
         keyPath: "",
-        restartCommand: ""
+        restartCommand: "",
+        beforePushCommand: "",
     };
     importPlatformId.value = undefined;
 };
@@ -483,7 +487,11 @@ const handleImportChange = (value) => {
                     <a-form-item label="密钥路径">
                         <a-input v-model:value="form.config.keyPath" placeholder="服务器上的密钥存放路径，包含文件名"/>
                     </a-form-item>
-                    <a-form-item label="执行操作">
+                    <a-form-item label="前置命令">
+                        <a-textarea v-model:value="form.config.beforePushCommand"
+                                    placeholder="更新证书前的操作， 如 通过sudo授予目录权限"/>
+                    </a-form-item>
+                    <a-form-item label="后置命令">
                         <a-textarea v-model:value="form.config.restartCommand"
                                     placeholder="更新证书后的操作， 例 nginx -s reload"/>
                     </a-form-item>

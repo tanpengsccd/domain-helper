@@ -30,6 +30,15 @@ export class SSHPushStrategy extends IPushStrategy {
             await this.validate(config);
             oncall && oncall('connected', {msg: '连接服务器成功 🎉'});
             const sftp = await this.ssh.requestSFTP();
+
+
+            // 执行前置命令
+            if (config.beforePushCommand) {
+                oncall && oncall('beforePushCommand', {msg: '开始执行命令'});
+                await this.ssh.execCommand(config.beforePushCommand);
+                oncall && oncall('afterPushCommand', {msg: '命令执行成功 🎉'});
+            }
+
             oncall && oncall('beforePush', {msg: '开始推送证书文件'});
             await this.writeContentToFile(sftp, certData.cert, config.certPath);
             await this.writeContentToFile(sftp, certData.key, config.keyPath);
