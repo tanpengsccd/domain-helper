@@ -6,6 +6,7 @@ import awslogo from "@/assets/cloud/aws.png";
 import volcengineLogo from "@/assets/cloud/volcengine.png";
 import westLogo from "@/assets/cloud/west.png";
 import spaceshipLogo from "@/assets/cloud/spaceship.png";
+import {reactive} from "vue";
 
 export const cloudsData = [
     {
@@ -29,7 +30,7 @@ export const cloudsData = [
                 title: '备注',
                 dataIndex: 'Remark',
                 key: 'Remark',
-                 align: 'center',
+                align: 'center',
             },
             {
                 title: '状态',
@@ -62,7 +63,7 @@ export const cloudsData = [
                 title: '备注',
                 dataIndex: 'Remark',
                 key: 'Remark',
-                 align: 'center',
+                align: 'center',
             },
             {
                 title: '状态',
@@ -99,7 +100,7 @@ export const cloudsData = [
                 title: '备注',
                 dataIndex: 'Remark',
                 key: 'Remark',
-                 align: 'center',
+                align: 'center',
             },
             {
                 title: '状态',
@@ -159,7 +160,7 @@ export const cloudsData = [
                 title: '备注',
                 dataIndex: 'Remark',
                 key: 'Remark',
-                 align: 'center',
+                align: 'center',
             },
             {
                 title: '状态',
@@ -197,7 +198,7 @@ export const cloudsData = [
                 title: '备注',
                 dataIndex: 'Remark',
                 key: 'Remark',
-                 align: 'center',
+                align: 'center',
             },
             {
                 title: '代理状态',
@@ -249,3 +250,46 @@ export const RecordTypes = [
     "CNAME",
     "TXT", "AAAA", "NS",
 ]
+
+// 推送平台
+export const platformTypes = reactive({
+    'ssh': {
+        key: "ssh",
+        name: "SSH",
+        color: "#000",
+        title: "SSH推送到服务器",
+        config: {
+            host: "",
+            port: 22,
+            username: "",
+            password: "",
+            privateKey: "",
+            certPath: "",
+            keyPath: "",
+            restartCommand: "",
+            beforePushCommand: "",
+        },
+    },
+    'qiniu': {
+        key: "qiniu",
+        name: "七牛云",
+        color: "#00AAE7",
+        title: "七牛云平台",
+        config: {
+            accessKey: "",
+            secretKey: "",
+            cdnDomain: ""  // 可选},
+        },
+    },
+    "ali": {
+        key: "ali",
+        name: "阿里云",
+        color: "#FF6A00",
+        title: "阿里云平台",
+        config: {
+            accessKey: "",
+            secretKey: "",
+            cdnDomain: ""  // 可选},
+        },
+    }
+})

@@ -15,38 +15,15 @@ const searchKey = ref("");
 const allPushplatform = ref(getAllPushplatform());
 const keySwitch = ref(false);
 const isEdit = ref(false);
+import {platformTypes} from "@/utils/data";
 
-
-const platform_types = reactive({
-    'ssh': {
-        key: "ssh",
-        name: "SSH",
-        color: "#000",
-        title: "SSH推送到服务器",
-    },
-    'qiniu': {
-        key: "qiniu",
-        name: "七牛云",
-        color: "#00AAE7",
-        title: "七牛云平台",
-    }
-});
+const platform_types = platformTypes;
 
 const form = reactive({
     _id: null,
     tag: "",
     platform_type: "ssh",
-    config: {
-        host: "",
-        port: 22,
-        username: "",
-        password: "",
-        privateKey: "",
-        certPath: "",
-        keyPath: "",
-        restartCommand: "",
-        beforePushCommand: "",
-    }
+    config: platform_types.ssh.config,
 });
 
 const refreshPushplatform = () => {
@@ -66,29 +43,7 @@ const getPushplatformInfo = (type, key = null) => {
 
 const changeCloud = (type) => {
     form.platform_type = type;
-    switch (type) {
-        case 'ssh':
-            form.config = {
-                host: "",
-                port: 22,
-                username: "",
-                password: "",
-                privateKey: "",
-                certPath: "",
-                keyPath: "",
-                restartCommand: "",
-                beforePushCommand: "",
-            };
-            authType.value = 'password';
-            break;
-        case 'qiniu':
-            form.config = {
-                accessKey: "",
-                secretKey: "",
-                cdnDomain: ""  // 可选
-            };
-            break;
-    }
+    form.config = platform_types[type].config;
 };
 
 const editPushplatform = (item) => {
