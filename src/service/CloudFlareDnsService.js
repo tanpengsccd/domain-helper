@@ -4,8 +4,9 @@ import {containsAnySubstring, getDnsServer, getDomain} from "@/utils/tool";
 
 // 文档地址 https://developers.cloudflare.com/api/operations/dns-records-for-a-zone-create-dns-record
 class CloudflareDnsService {
-    constructor(email, apiKey) {
+    constructor(email, apiKey, apiToken) {
         this.apiKey = apiKey;
+        this.apiToken = apiToken;
         this.email = email;
         this.apiBase = 'api.cloudflare.com';
         this.dnsServer = ['cloudflare']
@@ -145,10 +146,13 @@ class CloudflareDnsService {
     async cfRest(method, endpoint, data = null) {
         const headers = {
             'Content-Type': 'application/json',
-            // Authorization: this.apiToken ? `Bearer ${this.apiToken}` : undefined,
-            'X-Auth-Email': this.email,
-            'X-Auth-Key': this.apiKey,
         };
+        if (this.apiToken) {
+            headers['Authorization'] = `Bearer ${this.apiToken}`;
+        } else {
+            headers['X-Auth-Email'] = this.email;
+            headers['X-Auth-Key'] = this.apiKey;
+        }
 
         const options = {
             hostname: this.apiBase,

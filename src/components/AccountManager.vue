@@ -1,5 +1,5 @@
 <script setup>
-import {CloudDownloadOutlined, DeleteOutlined} from "@ant-design/icons-vue";
+import {CloudDownloadOutlined, DeleteOutlined, InfoCircleOutlined} from "@ant-design/icons-vue";
 import {computed, getCurrentInstance, h, ref, reactive} from "vue";
 import {Modal, message, notification, theme} from 'ant-design-vue';
 import {
@@ -25,6 +25,7 @@ const form = reactive({
     _id: null,
     tag: "",
     cloud_key: "ali",
+    desc: "", // 额外描述
     tokens: [
         {
             key: "KEY",
@@ -49,12 +50,13 @@ const filterClouds = computed(() => {
             item.cloud_info.title.includes(key);
     });
 });
-
 const changeCloud = (key) => {
-    form.tokens = getDomainBaseCloud(key).tokens.map(item => {
+    const cloudInfo = getDomainBaseCloud(key);
+    form.tokens = cloudInfo.tokens.map(item => {
         item.value = "";
         return item;
     });
+    form.desc = cloudInfo.desc;
 };
 
 const editCloudSetting = (item) => {
@@ -73,6 +75,7 @@ const addCloudAccount = () => {
     form.tag = "";
     form.key = "";
     form.cloud_key = "ali";
+    form.desc = "";
     form.tokens = getDomainBaseCloud("ali").tokens.map(item => {
         item.value = "";
         return item;
@@ -107,10 +110,13 @@ const saveSetting = () => {
         value: item.value.trim()
     }));
 
-    if (tokens.some(item => !item.value.trim())) {
-        message.error("请填写完整的账号信息");
+
+    // 全都为空的情况下 才提示 填写任意一项
+    if (tokens.every(item => !item.value.trim())) {
+        message.error("请填写账号信息");
         return;
     }
+
 
     let data = {
         cloud_key: form.cloud_key,
@@ -187,6 +193,12 @@ const downloadDomains = (item) => {
         proxy.$eventBus.emit("refresh-domain-list");
     });
 }
+
+// 确保 HTML 内容安全
+const safeDesc = computed(() => {
+    return form.desc || '';
+});
+
 </script>
 
 <template>
@@ -241,16 +253,18 @@ const downloadDomains = (item) => {
                 </template>
 
                 <a-space direction="vertical" style="width: 100%">
-                    <a-space v-for="(x, xindex) in i.tokens" :key="xindex">
-                        <a-typography-text class="key">{{ x.key }}</a-typography-text>
-                        <a-typography-text
-                            style="cursor: pointer"
-                            @click.stop="copyText(x.value, `${i.cloud_info.title} ${x.key} 复制成功`)"
-                            class="value"
-                        >
-                            {{ hideKey(x.value) }}
-                        </a-typography-text>
-                    </a-space>
+                    <template v-for="(x, xindex) in i.tokens" :key="xindex">
+                        <a-space v-if="x.value">
+                            <a-typography-text class="key">{{ x.key }}</a-typography-text>
+                            <a-typography-text
+                                style="cursor: pointer"
+                                @click.stop="copyText(x.value, `${i.cloud_info.title} ${x.key} 复制成功`)"
+                                class="value"
+                            >
+                                {{ hideKey(x.value) }}
+                            </a-typography-text>
+                        </a-space>
+                    </template>
                 </a-space>
             </a-card>
 
@@ -288,6 +302,12 @@ const downloadDomains = (item) => {
                         :maxlength="10"
                         placeholder="账号标签 例如 个人、公司等"
                     />
+                </a-form-item>
+                <a-form-item v-if="form.desc" label="参数说明">
+                    <transition name="fade">
+                        <div class="desc-container" v-html="safeDesc"
+                             :style="{'--key-color': token.colorPrimary}"></div>
+                    </transition>
                 </a-form-item>
                 <a-form-item
                     v-for="(token, index) in form.tokens"
@@ -365,6 +385,7 @@ const downloadDomains = (item) => {
             display: flex;
             justify-content: flex-start;
             align-items: flex-start;
+
             :deep(.ant-card) {
                 width: 45%;
                 flex-shrink: 0;
@@ -386,5 +407,42 @@ const downloadDomains = (item) => {
 
 .value {
     color: v-bind('token.colorText');
+}
+
+.desc-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: v-bind('token.colorTextSecondary');
+
+    .anticon {
+        color: v-bind('token.colorPrimary');
+    }
+}
+
+.desc-container {
+    border-radius: 4px;
+    padding: 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border: 1px solid #D9D9D9;
+
+    :deep(.key) {
+        color: var(--key-color) !important;
+    }
+}
+
+// 添加过渡动画
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
 }
 </style> 

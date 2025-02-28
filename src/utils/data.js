@@ -185,8 +185,13 @@ export const cloudsData = [
             {
                 key: "API Key",
                 value: ""
+            },
+            {
+                key: "API Token",
+                value: ""
             }
         ],
+        desc: "<span class='key'>Token</span> 和 <span class='key'> Key,Email </span> 二选一，优先使用<span class='key'>Token</span>",
         columns: [
             {
                 title: '备注',
