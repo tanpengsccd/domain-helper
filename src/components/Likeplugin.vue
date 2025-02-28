@@ -8,6 +8,7 @@ const zanshang = ref(false);
 const activeKey = ref('1');
 
 const donationList = ref([
+    {username: '木偶', channel: '微信', amount: 6.66, time: "2025-02-28 13:09:33"},
     {username: 'Ziu', channel: 'utools', amount: 8, time: "2025-02-27 15:41:40"},
     {username: '吖唔咪', channel: 'utools', amount: 8, time: "2025-02-22 18:08:58"},
     {username: 'linkFly', channel: 'utools', amount: 32, time: "2025-01-08 23:20:27"},

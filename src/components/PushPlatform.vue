@@ -369,6 +369,22 @@ const handleImportChange = (value) => {
                             <a-typography-text class="value">{{ item.config.cdnDomain }}</a-typography-text>
                         </a-space>
                     </template>
+
+                    <!-- 阿里云类型显示信息 -->
+                    <template v-if="item.platform_type === 'ali'">
+                        <a-space>
+                            <div class="key">AccessKey:</div>
+                            <a-typography-text class="value">{{ hideKey(item.config.accessKey) }}</a-typography-text>
+                        </a-space>
+                        <a-space>
+                            <div class="key">SecretKey:</div>
+                            <a-typography-text class="value">{{ hideKey(item.config.secretKey) }}</a-typography-text>
+                        </a-space>
+                        <a-space v-if="item.config.cdnDomain">
+                            <div class="key">CDN域名:</div>
+                            <a-typography-text class="value">{{ item.config.cdn_domain }}</a-typography-text>
+                        </a-space>
+                    </template>
                 </a-space>
             </a-card>
 
@@ -390,7 +406,8 @@ const handleImportChange = (value) => {
                 </a-flex>
             </template>
             <a-form layout="vertical">
-                <a-form-item v-if="!isEdit && allPushplatform.length > 0" label="快速导入" extra="选择一个现有平台来快速填充配置信息">
+                <a-form-item v-if="!isEdit && allPushplatform.length > 0" label="快速导入"
+                             extra="选择一个现有平台来快速填充配置信息">
                     <a-select show-search v-model:value="importPlatformId" placeholder="从现有平台导入配置"
                               style="width: 100%"
                               @change="handleImportChange" allowClear>
@@ -460,9 +477,38 @@ const handleImportChange = (value) => {
                     <a-form-item label="SecretKey">
                         <a-input-password v-model:value="form.config.secretKey" placeholder="七牛云 SecretKey"/>
                     </a-form-item>
-                    <a-form-item label="CDN域名" extra="如果填写了CDN域名，证书会自动绑定到该域名，否则只会上传到证书管理">
-                        <a-input extra="" v-model:value="form.config.cdnDomain" placeholder="可选，如需自动绑定CDN域名请填写"/>
+                    <a-form-item label="CDN域名"
+                                 extra="如果填写了CDN域名，证书会自动绑定到该域名，否则只会上传到证书管理">
+                        <a-input extra="" v-model:value="form.config.cdnDomain"
+                                 placeholder="可选，如需自动绑定CDN域名请填写"/>
                     </a-form-item>
+                </template>
+
+                <!-- 阿里云配置表单 -->
+                <template v-if="form.platform_type === 'ali'">
+                    <a-form-item label="AccessKey">
+                        <a-input v-model:value="form.config.accessKey" placeholder="阿里云 AccessKey ID"/>
+                    </a-form-item>
+                    <a-form-item label="SecretKey">
+                        <a-input-password v-model:value="form.config.secretKey" placeholder="阿里云 AccessKey Secret"/>
+                    </a-form-item>
+                    <a-form-item label="推送渠道">
+                        <a-segmented block v-model:value="form.config.type" :options="['SSL', 'CDN', 'OSS']"/>
+                    </a-form-item>
+                    <a-form-item label="CDN域名" v-if="form.config.type === 'CDN'">
+                        <a-input v-model:value="form.config.cdn_domain" placeholder="CDN域名"/>
+                    </a-form-item>
+                    <template v-if="form.config.type === 'OSS'">
+                        <a-form-item label="Bucket名称">
+                            <a-input v-model:value="form.config.oss_bucket" placeholder="Bucket名称"/>
+                        </a-form-item>
+                        <a-form-item label="Bucket域名">
+                            <a-input v-model:value="form.config.oss_domain" placeholder="Bucket域名"/>
+                        </a-form-item>
+                         <a-form-item label="Bucket地域">
+                            <a-input v-model:value="form.config.oss_domain" placeholder="Bucket所在域名"/>
+                        </a-form-item>
+                    </template>
                 </template>
 
                 <a-form-item>

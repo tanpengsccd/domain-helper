@@ -289,7 +289,19 @@ export const platformTypes = reactive({
         config: {
             accessKey: "",
             secretKey: "",
-            cdnDomain: ""  // 可选},
+            type: "SSL", // 类型 包括 SSL、 CDN、SLB、 ALB、DCDN、OSS
+            cdn_domain: "",
+            slb_id: "",
+            slb_port: "",
+            slb_region: "",
+            alb_id: "",
+            alb_port: "",
+            alb_region: "",
+            alb_protocol: "",
+            dcdn_domain: "",
+            oss_bucket: "",
+            oss_region: "",
+            oss_domain: "",
         },
     }
 })
