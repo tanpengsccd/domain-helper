@@ -116,6 +116,7 @@ const handleOk = async () => {
         pushRes.value = await pushService.push(paltformInfo.config, {
             cert: sslInfo.value.cert,
             key: sslInfo.value.key,
+            domain: sslInfo.value.domain,
         }, (type, extData) => {
             switch (type) {
                 case "error":
@@ -265,7 +266,7 @@ const init = () => {
 
             <a-space direction="vertical">
                 <div>证书已成功推送到 <span :style="{ color: colorPrimary }">{{ paltformInfo.tag }}</span></div>
-                <template v-if="paltformInfo.platform_type === 'qiniu'">
+                <template v-if="pushRes.msg">
                     <p v-html="pushRes.msg"></p>
                 </template>
                 <template v-if="paltformInfo.platform_type === 'ssh'">

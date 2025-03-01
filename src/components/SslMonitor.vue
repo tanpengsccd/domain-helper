@@ -446,7 +446,6 @@ onMounted(() => {
                         <div class="editable-cell">
                             <div v-if="editableData[record._id]" class="editable-cell-input-wrapper">
                                 <a-input v-model:value="editableData[record._id].remark"
-                                         @pressEnter="saveRemark(record._id)"
                                          @blur="saveRemark(record._id)"/>
                             </div>
                             <div v-else class="editable-cell-text-wrapper">

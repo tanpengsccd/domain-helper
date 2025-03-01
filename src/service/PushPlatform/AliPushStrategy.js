@@ -6,7 +6,7 @@ const crypto = window.xcrypto
 const url = window.xUrl
 // Request 类定义
 
-
+import dayjs from "dayjs";
 const ALI_TYPE = {
     "ssl": {api: "cas.aliyuncs.com", version: "2020-04-07"},
     "cdn": {api: "cdn.aliyuncs.com", version: "2018-05-10"},
@@ -42,23 +42,19 @@ class Request {
 }
 
 export class AliPushStrategy extends IPushStrategy {
-    public accessKeyId;
-    public accessKeySecret;
-
     constructor() {
         super();
-        this.casApiUrl = 'cas.aliyuncs.com'; // api地址
-        this.version = '2020-04-07'; // api地址的版本
-        this.api
     }
 
     async validate(config) {
-        if (config.type === 'ssl') {
+        this.accessKeyId = config.accessKey;
+        this.accessKeySecret = config.secretKey;
+        if (config.type === 'SSL') {
             // 验证ssl
             const res = await this.validateSSL(config);
             console.log(res);
         }
-        if (config.type === 'cdn') {
+        if (config.type === 'CDN') {
             // 验证ssl
             return this.validateCDN(config);
         }
@@ -71,220 +67,47 @@ export class AliPushStrategy extends IPushStrategy {
             version: ALI_TYPE.ssl.version,
             action
         });
-        return this._aliRest(request);
+        return this._aliRest(request.options, request.body);
     }
 
     async validateCDN(config) {
 
     }
 
-    async push() {
-
+    // 推送证书
+    async push(config, certData, oncall = null) {
+        console.log(config);
+        if (config.type === 'SSL') {
+            return await this.pushSSL(config, certData, oncall);
+        }
+        if (config.type === 'CDN') {
+            return await this.pushCDN(config, certData, oncall);
+        }
     }
 
-    async listDomainsWithExp() {
-        this.apiBase = "domain.aliyuncs.com";
-        this.version = '2018-01-29';
-        const action = "QueryDomainList";
-
-        let page = 1;
-        let domainList = [];
-        while (1) {
-            const payload = this._buildQuery(action, {PageSize: 500, PageNum: page});
-            const res = await this._aliRest(action, payload)
-            domainList.push(...res.Data.Domain)
-            if (res.NextPage === false) {
-                break;
-            }
-            page++;
+    async pushSSL(config, certData, oncall = null) {
+        const action = 'UploadUserCertificate';
+        const body = {
+            Cert: certData.cert,
+            Key: certData.key,
+            Name: certData.domain + '_' + dayjs().format('YYYYMMDDHHmmss'),
         }
-        return domainList;
-    }
 
-    async listDomains() {
-        let pageNumber = 1;
-        const pageSize = 100;
-        const res = await this.getDomainsData(pageNumber, pageSize);
-        if (res.TotalCount === 0) {
-            return new Error('未发现域名')
-        }
-        const totalPageCount = Math.ceil(res.TotalCount / pageSize);
-        let domains = res.Domains.Domain;
-        if (totalPageCount > 1) {
-            for (var i = 2; i <= totalPageCount; i++) {
-                const res = await this.getDomainsData(i, pageSize);
-                domains.push.apply(domains, res.Domains.Domain);
-            }
-        }
-        try {
-            const expRes = await this.listDomainsWithExp();
-            // 过滤掉已过期的域名, 并且把过期时间加入到域名列表中
-            domains = domains.map(item => {
-                const exp = expRes.find(expItem => expItem.DomainName === item.DomainName);
-                return {
-                    ...item,
-                    ExpirationDateStatus: exp?.ExpirationDateStatus,
-                    ExpirationDate: exp?.ExpirationDate
-                }
-            }).filter(item => item.ExpirationDateStatus !== '2')
-        } catch (e) {
-            //console.log(e);
-        } finally {
-            // 调用完 恢复api地址
-            this.apiBase = 'alidns.aliyuncs.com';
-            this.version = '2015-01-09';
-        }
-        domains = await Promise.all(domains.map(async item => {
-            try {
-                const {nsname} = await getDnsServer(item.DomainName);
-                const isAliDns = containsAnySubstring(this.aliDns, nsname);
-                return isAliDns ? item : null; // 检测是否是阿里云的dns服务器
-            } catch (e) {
-                return item;
-            }
-        }));
-        domains = domains.filter(zone => zone !== null);
-        return domains.map(item => {
-            return {
-                domain: item.DomainName,
-                cloud: "ali",
-                expire_time: item?.ExpirationDate,
-                renew_link: item?.ExpirationDate ? renewLink : "",
-            }
-        })
-    }
-
-
-    async getDomainsData(PageNumber, PageSize) {
-        const action = 'DescribeDomains';
-        const payload = this._buildQuery(action, {
-            PageSize, PageNumber
+        const request = this._makeRequest("POST", '/', (new URLSearchParams(body)).toString(), {}, {
+            api: ALI_TYPE.ssl.api,
+            version: ALI_TYPE.ssl.version,
+            action
         });
-        return this._aliRest(action, payload);
-    }
-
-    async DomainInfo(domina) {
-        const action = "DescribeDomainInfo"
-        const payload = this._buildQuery(action, {DomainName: domina});
-        return await this._aliRest(action, payload);
-    }
-
-    async listRecords(domain) {
-        const action = 'DescribeDomainRecords';
-        const payload = this._buildQuery(action, {DomainName: domain, PageSize: 500});
-        return new Promise((resolve, reject) => {
-            this._aliRest(action, payload).then(res => {
-                if (res.TotalCount === 0) {
-                    resolve({
-                        count: 0,
-                        list: []
-                    });
-                }
-                resolve({
-                    count: res.TotalCount,
-                    list: res.DomainRecords.Record.map(item => {
-                        return {
-                            RecordId: item.RecordId,
-                            Name: item.RR,
-                            Value: item.Value,
-                            TTL: item.TTL,
-                            Type: item.Type,
-                            Status: item.Status === "ENABLE",
-                            Remark: item.Remark
-                        }
-                    })
-                })
-            }).catch(e => {
-                reject(e);
-            })
-        })
-    }
-
-    async addRecord(domain, record) {
-        const action = 'AddDomainRecord';
-        const payload = this._buildQuery(action, {
-            DomainName: domain,
-            RR: record.name,
-            Type: record.type,
-            Value: record.value,
-        });
-        return new Promise((resolve, reject) => {
-            this._aliRest(action, payload).then(res => {
-                if (record.remark) {
-                    this.updateRecordRemark(res.RecordId, record.remark).then(() => {
-                        resolve(res);
-                    }).catch(e => {
-                        reject(e);
-                    })
-                } else {
-                    resolve(res);
-                }
-            }).catch(e => {
-                reject(e);
-            })
-        })
-    }
-
-    async updateRecordRemark(recordId, remark) {
-        const action = 'UpdateDomainRecordRemark';
-        const payload = this._buildQuery(action, {
-            RecordId: recordId,
-            Remark: remark.replace(/[!~*'()_.-]/g, ' ')
-        });
-        return this._aliRest(action, payload);
-    }
-
-    async deleteRecord(domain, recordId) {
-        const action = 'DeleteDomainRecord';
-        const payload = this._buildQuery(action, {RecordId: recordId});
-        return this._aliRest(action, payload);
-    }
-
-    async updateRecord(domain, record) {
-        const records = await this.listRecords(domain);
-        const oldRecord = records.list.find(item => item.RecordId === record.id);
-
-        if (!oldRecord) {
-            throw new Error('未找到记录');
-        }
-
-        const {name, type, value, remark, id} = record;
-        if (oldRecord.Name !== name || oldRecord.Type !== type || oldRecord.Value !== value) {
-            const action = 'UpdateDomainRecord';
-            const payload = this._buildQuery(action, {
-                RecordId: id,
-                RR: name,
-                Type: type,
-                Value: value,
-            });
-            await this._aliRest(action, payload);
-        }
-        // 如果remark不同，则更新remark
-        if (oldRecord.Remark !== remark) {
-            await this.updateRecordRemark(id, remark);
-        }
-    }
-
-
-    _buildQuery(action, params) {
-        const request = new Request(
-            'GET',
-            '/',
-            this.apiBase,
-            action,
-            this.version
-        );
-        request.queryParam = {
-            ...params
-        };
-
-        // 计算签名并获取完整请求头
-        this._getAuthorization(request);
-
+        const res = await this._aliRest(request.options, request.body);
         return {
-            headers: request.headers,
-            query: new URLSearchParams(request.queryParam).toString()
+            msg: `证书ID : <span style="color: #FF6A00">${res.CertId}</span> 
+<br> 
+证书地址 : <a onclick="utools.shellOpenExternal('https://yundun.console.aliyun.com/?p=cas#/certExtend/upload?currentPage=1&pageSize=10&keyword=&statusCode=')">查看证书</a>`
         };
+    }
+
+    async pushCDN(config, certData, oncall = null) {
+
     }
 
 
@@ -307,15 +130,19 @@ export class AliPushStrategy extends IPushStrategy {
         request.setBody(body);
         // 计算签名并获取完整请求头
         this._getAuthorization(request);
+        const queryString = new URLSearchParams(request.queryParam).toString();
         return {
-            hostname: request.host,
-            path: `${request.canonicalUri}?` + new URLSearchParams(request.queryParam).toString(),
-            method: request.method,
-            headers: {
-                ...request.headers,
-                'Content-Type': 'application/x-www-form-urlencoded',
+            options: {
+                hostname: request.host,
+                path: `${request.canonicalUri}` + (queryString ? `?${queryString}` : ''),
+                method: request.httpMethod,
+                headers: {
+                    ...request.headers,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
             },
-        };
+            body: body
+        }
     }
 
     _getAuthorization(signRequest) {
@@ -407,25 +234,16 @@ export class AliPushStrategy extends IPushStrategy {
         }
     }
 
-    async _aliRest(request) {
+    async _aliRest(options, data) {
         try {
-            const response = await httpsRequest(request);
-            const result = JSON.parse(response);
+            const result = await httpsRequest(options, data, true);
             if (result.Code) {
                 throw new Error(result.Message);
             }
             return result;
         } catch (error) {
+            console.log(error);
             throw new Error(`API请求错误: ${error.message}`);
         }
-    }
-
-    async changeRecordStatus(domain, recordId, extra = {}) {
-        const action = 'SetDomainRecordStatus';
-        const payload = this._buildQuery(action, {
-            RecordId: recordId,
-            Status: extra.Status ? "Enable" : "Disable"
-        });
-        return this._aliRest(action, payload);
     }
 } 

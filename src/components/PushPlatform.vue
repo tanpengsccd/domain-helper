@@ -142,6 +142,24 @@ const saveSetting = async () => {
             message.error("请填写七牛云的 AccessKey 和 SecretKey");
             return;
         }
+    } else if (form.platform_type === 'ali') {
+        if (!form.config.accessKey || !form.config.secretKey) {
+            message.error("请填写阿里云的 AccessKey ID 和 AccessKey Secret");
+            return;
+        }
+        if (!form.config.type) {
+            message.error("请选择推送渠道");
+            return;
+        }
+        // 必须勾选推送渠道
+        if (form.config.type === 'CDN' && !form.config.cdn_domain) {
+            message.error("请填写CDN域名");
+            return;
+        }
+        if (form.config.type === 'OSS' && (!form.config.oss_bucket || !form.config.oss_domain || form.config.oss_region)) {
+            message.error("请填写OSS Bucket名称、域名、地域");
+            return;
+        }
     }
 
     saveLoading.value = true;
@@ -336,7 +354,7 @@ const handleImportChange = (value) => {
                             <div class="key">证书路径:</div>
                             <a-typography-text style="cursor: pointer; max-width: 180px"
                                                @click.stop="copyText(item.config.certPath, '证书路径复制成功')"
-                                               :title="item.config.certPath"
+                                               :content="item.config.certPath"
                                                ellipsis
                                                class="value">
                                 {{ item.config.certPath }}
@@ -346,7 +364,7 @@ const handleImportChange = (value) => {
                             <div class="key">密钥路径:</div>
                             <a-typography-text style="cursor: pointer; max-width: 180px"
                                                @click.stop="copyText(item.config.keyPath, '密钥路径复制成功')"
-                                               :title="item.config.keyPath"
+                                               :content="item.config.keyPath"
                                                ellipsis
                                                class="value">
                                 {{ item.config.keyPath }}
@@ -373,11 +391,11 @@ const handleImportChange = (value) => {
                     <!-- 阿里云类型显示信息 -->
                     <template v-if="item.platform_type === 'ali'">
                         <a-space>
-                            <div class="key">AccessKey:</div>
+                            <div class="key">AccessKey ID:</div>
                             <a-typography-text class="value">{{ hideKey(item.config.accessKey) }}</a-typography-text>
                         </a-space>
                         <a-space>
-                            <div class="key">SecretKey:</div>
+                            <div class="key">AccessKey Secret:</div>
                             <a-typography-text class="value">{{ hideKey(item.config.secretKey) }}</a-typography-text>
                         </a-space>
                         <a-space v-if="item.config.cdnDomain">
@@ -486,10 +504,10 @@ const handleImportChange = (value) => {
 
                 <!-- 阿里云配置表单 -->
                 <template v-if="form.platform_type === 'ali'">
-                    <a-form-item label="AccessKey">
+                    <a-form-item label="AccessKey ID">
                         <a-input v-model:value="form.config.accessKey" placeholder="阿里云 AccessKey ID"/>
                     </a-form-item>
-                    <a-form-item label="SecretKey">
+                    <a-form-item label="AccessKey Secret">
                         <a-input-password v-model:value="form.config.secretKey" placeholder="阿里云 AccessKey Secret"/>
                     </a-form-item>
                     <a-form-item label="推送渠道">
@@ -506,7 +524,7 @@ const handleImportChange = (value) => {
                             <a-input v-model:value="form.config.oss_domain" placeholder="Bucket域名"/>
                         </a-form-item>
                          <a-form-item label="Bucket地域">
-                            <a-input v-model:value="form.config.oss_domain" placeholder="Bucket所在域名"/>
+                            <a-input v-model:value="form.config.oss_region" placeholder="Bucket所在域名"/>
                         </a-form-item>
                     </template>
                 </template>
