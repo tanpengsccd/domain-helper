@@ -156,7 +156,7 @@ const saveSetting = async () => {
             message.error("请填写CDN域名");
             return;
         }
-        if (form.config.type === 'OSS' && (!form.config.oss_bucket || !form.config.oss_domain || form.config.oss_region)) {
+        if (form.config.type === 'OSS' && (!form.config.oss_bucket || !form.config.oss_domain || !form.config.oss_region)) {
             message.error("请填写OSS Bucket名称、域名、地域");
             return;
         }
