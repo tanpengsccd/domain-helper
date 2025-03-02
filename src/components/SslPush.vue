@@ -22,7 +22,10 @@ const form = reactive({
     platform: undefined,
     ssl: undefined,
 })
-
+import {platformTypes} from "@/utils/data";
+const getPushplatformInfo = (type, key = null) => {
+    return key ? platformTypes[type][key] : platform_types[type];
+};
 const paltformInfo = reactive({
     _id: '',
     platform_type: "",
@@ -220,31 +223,10 @@ const init = () => {
                 <a-form-item label="推送平台">
                     <a-select v-model:value="form.platform" show-search @change="setPaltform">
                         <a-select-option v-for="item in allPlatform" :key="item._id" :value="item._id">
-                            {{ item.platform_type }} - {{ item.tag }}
+                            {{ getPushplatformInfo(item.platform_type, 'name') }} - {{ item.tag }}
                         </a-select-option>
                     </a-select>
                 </a-form-item>
-
-                <template v-if="paltformInfo.platform_type === 'ssh'">
-                    <a-form-item label="主机地址">
-                        <a-input disabled :value="`${paltformInfo.config.host}:${paltformInfo.config.port}`"
-                                 placeholder="请输入主机IP或域名"/>
-                    </a-form-item>
-                    <a-form-item label="证书路径">
-                        <a-input v-model:value="paltformInfo.config.certPath" placeholder="证书存放路径，具体到文件"/>
-                    </a-form-item>
-                    <a-form-item label="私钥路径">
-                        <a-input v-model:value="paltformInfo.config.keyPath" placeholder="私钥存放路径，具体到文件"/>
-                    </a-form-item>
-                    <a-form-item label="执行操作">
-                        <a-input v-model:value="paltformInfo.config.restartCommand" placeholder="执行操作"/>
-                    </a-form-item>
-                </template>
-                <template v-if="paltformInfo.platform_type === 'qiniu'">
-                    <a-form-item label="CDN域名" extra="如果设置了该值，会尝试将证书直接绑定到该域名上">
-                        <a-input v-model:value="paltformInfo.config.cdnDomain" placeholder="[选填] CDN域名"/>
-                    </a-form-item>
-                </template>
             </a-form>
 
             <div v-else>
