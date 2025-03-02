@@ -298,7 +298,7 @@ const init = () => {
 
                 <a-form-item label="多平台推送">
                     <a-switch @change="togglePushMode" :checked="form.platform === undefined"/>
-                    <span style="margin-left: 8px;">{{ form.platform === undefined ? '已开启' : '已关闭' }}</span>
+                    <span style="margin-left: 8px;font-size: 12px;">单平台可修改推送参数，多平台不可修改</span>
                 </a-form-item>
 
                 <a-form-item label="推送平台" v-if="form.platform !== undefined">
