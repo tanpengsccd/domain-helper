@@ -115,7 +115,13 @@ export class AliPushStrategy extends IPushStrategy {
     }
 
     async validateCDN(config) {
-        // CDN验证逻辑
+        const action = 'DescribeUserDomains';
+        const request = this._makeRequest("GET", '/', '', {}, {
+            api: ALI_TYPE.cdn.api,
+            version: ALI_TYPE.cdn.version,
+            action
+        });
+        return this._aliRest(request.options, request.body);
     }
 
     async validateOSS(config) {
@@ -168,6 +174,22 @@ export class AliPushStrategy extends IPushStrategy {
 
     async pushCDN(config, certData, oncall = null) {
         // CDN推送逻辑
+        const action = 'SetCdnDomainSSLCertificate';
+        const body = {
+            SSLPub: certData.cert,
+            SSLPri: certData.key,
+            CertType: 'upload',
+            SSLProtocol: 'on',
+            DomainName: config.cdn_domain,
+        }
+
+        const request = this._makeRequest("POST", '/', (new URLSearchParams(body)).toString(), {}, {
+            api: ALI_TYPE.cdn.api,
+            version: ALI_TYPE.cdn.version,
+            action
+        });
+        await this._aliRest(request.options, request.body);
+        return {msg: `证书已成功绑定到CDN ${config.cdn_domain} 🎉`};
     }
 
     async pushOSS(config, certData, oncall = null) {
@@ -195,7 +217,7 @@ export class AliPushStrategy extends IPushStrategy {
             comp: 'add',
         }, {}, {api});
         await this._aliOssRest(request.options, request.body);
-        return {msg : `证书已成功绑定到OSS ${config.oss_domain} 🎉`};
+        return {msg: `证书已成功绑定到OSS ${config.oss_domain} 🎉`};
     }
 
     _makeRequest(method, path, body, params, ext) {
