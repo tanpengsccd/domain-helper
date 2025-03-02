@@ -436,6 +436,7 @@ const handleImportChange = (value) => {
                         <a-flex align="center" gap="8">
                             <a-tag :color="getPushplatformInfo(item.platform_type,'color')">
                                 {{ getPushplatformInfo(item.platform_type, "name") }}
+                                {{item.platform_type === 'ali' ? item.config.type : ''}}
                             </a-tag>
                             <span class="platform-tag">{{ item.tag }}</span>
                         </a-flex>
@@ -513,9 +514,13 @@ const handleImportChange = (value) => {
                             <div class="key">AccessKey Secret:</div>
                             <a-typography-text class="value">{{ hideKey(item.config.secretKey) }}</a-typography-text>
                         </a-space>
-                        <a-space v-if="item.config.cdnDomain">
+                        <a-space v-if="item.config.type === 'CDN'">
                             <div class="key">CDN域名:</div>
                             <a-typography-text class="value">{{ item.config.cdn_domain }}</a-typography-text>
+                        </a-space>
+                        <a-space v-if="item.config.type === 'OSS'">
+                            <div class="key">OSS域名:</div>
+                            <a-typography-text class="value">{{ item.config.oss_domain }}</a-typography-text>
                         </a-space>
                     </template>
                 </a-space>
