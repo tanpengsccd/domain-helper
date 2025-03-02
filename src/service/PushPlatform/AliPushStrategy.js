@@ -80,10 +80,6 @@ class OssRequest {
     setBody(body) {
         this.body = body;
     }
-
-    setBucket(bucket) {
-        this.bucket = bucket;
-    }
 }
 
 export class AliPushStrategy extends IPushStrategy {
@@ -124,25 +120,14 @@ export class AliPushStrategy extends IPushStrategy {
     }
 
     async validateOSS(config) {
-        this.region = config.oss_region || 'cn-hangzhou';
-        this.bucket = config.oss_bucket || config.bucket;
-
+        this.region = config.oss_region;
+        this.bucket = config.oss_bucket;
         if (!this.bucket) {
             throw new Error('OSS bucket未设置');
         }
-
         const api = `${this.bucket}.${ALI_TYPE.oss.api.replace('cn-beijing', this.region)}`;
-
-        try {
-            const request = this._makeOssRequest("GET", '/', "", {cname: undefined}, {}, {api, bucket: config.oss_bucket});
-            console.log(request);
-            const res = await this._aliOssRest(request.options, request.body);
-            // console.log(xml2Json(res));
-            // console.log(xml2Json(res).Error.CanonicalRequest);
-        } catch (e) {
-            console.error('验证OSS配置失败:', e);
-            throw new Error(`验证OSS配置失败: ${e.message}`);
-        }
+        const request = this._makeOssRequest("GET", '/', "", {cname: undefined}, {}, {api});
+        return await this._aliOssRest(request.options, request.body);
     }
 
     // 推送证书
@@ -188,42 +173,31 @@ export class AliPushStrategy extends IPushStrategy {
     }
 
     async pushOSS(config, certData, oncall = null) {
-        this.region = config.region || 'cn-hangzhou';
-        this.bucket = config.oss_bucket || config.bucket;
+        this.region = config.oss_region;
+        this.bucket = config.oss_bucket;
+        const api = `${this.bucket}.${ALI_TYPE.oss.api.replace('cn-beijing', this.region)}`;
 
-        if (!this.bucket) {
-            throw new Error('OSS bucket未设置');
-        }
+        let body = `
+        <?xml version="1.0" encoding="UTF-8"?>
+<BucketCnameConfiguration>
+  <Cname>
+    <Domain>${config.oss_domain}</Domain>
+    <CertificateConfiguration>
+      <Certificate>${certData.cert}</Certificate>
+      <PrivateKey>${certData.key}</PrivateKey>
+      <PreviousCertId></PreviousCertId>
+      <Force>true</Force>
+    </CertificateConfiguration>
+  </Cname>
+</BucketCnameConfiguration>
+        `;
 
-        const objectKey = `certificates/${certData.domain}/${dayjs().format('YYYY-MM-DD')}/cert.pem`;
-        const keyObjectKey = `certificates/${certData.domain}/${dayjs().format('YYYY-MM-DD')}/key.pem`;
-
-        try {
-            // 上传证书
-            const certRequest = this._makeOssRequest("PUT", `/${objectKey}`, certData.cert, {
-                api: `${this.bucket}.${ALI_TYPE.oss.api.replace('cn-beijing', this.region)}`,
-            });
-
-            await this._aliRest(certRequest.options, certRequest.body);
-
-            // 上传私钥
-            const keyRequest = this._makeOssRequest("PUT", `/${keyObjectKey}`, certData.key, {
-                api: `${this.bucket}.${ALI_TYPE.oss.api.replace('cn-beijing', this.region)}`,
-            });
-
-            await this._aliRest(keyRequest.options, keyRequest.body);
-
-            return {
-                msg: `证书已成功上传到OSS
-<br>
-证书路径: ${objectKey}
-<br>
-私钥路径: ${keyObjectKey}`
-            };
-        } catch (e) {
-            console.error('上传证书到OSS失败:', e);
-            throw new Error(`上传证书到OSS失败: ${e.message}`);
-        }
+        const request = this._makeOssRequest("POST", '/', body, {
+            cname: undefined,
+            comp: 'add',
+        }, {}, {api});
+        await this._aliOssRest(request.options, request.body);
+        return {msg : `证书已成功绑定到OSS ${config.oss_domain} 🎉`};
     }
 
     _makeRequest(method, path, body, params, ext) {
@@ -270,12 +244,10 @@ export class AliPushStrategy extends IPushStrategy {
             params
         );
         request.setBody(body);
-        request.setBucket(ext.bucket);
         // 计算OSS签名并获取完整请求头
         this._getOssAuthorization(request);
 
         const queryString = (new URLSearchParams(request.queryParam).toString()).replace('=undefined', '');
-        console.log(queryString);
         return {
             options: {
                 hostname: request.host,
@@ -373,10 +345,10 @@ export class AliPushStrategy extends IPushStrategy {
         // 构建规范请求
         const canonicalRequest = [
             signRequest.httpMethod,
-            `/${signRequest.bucket}/`,
+            `/${this.bucket}/`,
             canonicalQueryString,
             canonicalHeaders,
-           signedHeaders,
+            signedHeaders,
             hashedRequestPayload
         ].join('\n');
 //                 canonicalRequest = `GET
@@ -528,17 +500,15 @@ export class AliPushStrategy extends IPushStrategy {
     }
 
     async _aliOssRest(options, data) {
-        console.log(options, data)
         try {
-            let result = await httpsRequest(options, data, true);
+            let result = await httpsRequest(options, data, false);
             result = xml2Json(result, ['Cname']);
-            // if (result && result.Code) {
-            //     throw new Error(result.Message || '未知错误');
-            // }
-            console.log(result)
+            if (result?.Error) {
+                throw new Error(result.Error?.Message || '未知错误');
+            }
+            console.log(result);
             return result;
         } catch (error) {
-            console.log(error);
             throw new Error(`API请求错误: ${error.message}`);
         }
     }

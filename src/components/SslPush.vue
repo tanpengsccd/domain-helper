@@ -112,7 +112,7 @@ const handleOk = async () => {
         // 这里应该添加实际的证书推送逻辑
         // 使用 sslInfo.value 中的证书信息
         const pushService = PushServiceFactory.getService(paltformInfo.platform_type);
-        await pushService.validate(paltformInfo.config);
+        // await pushService.validate(paltformInfo.config);
         pushRes.value = await pushService.push(paltformInfo.config, {
             cert: sslInfo.value.cert,
             key: sslInfo.value.key,

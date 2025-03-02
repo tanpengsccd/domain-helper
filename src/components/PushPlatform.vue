@@ -521,7 +521,7 @@ const handleImportChange = (value) => {
                             <a-input v-model:value="form.config.oss_bucket" placeholder="Bucket名称"/>
                         </a-form-item>
                         <a-form-item label="Bucket域名">
-                            <a-input v-model:value="form.config.oss_domain" placeholder="Bucket域名"/>
+                            <a-input v-model:value="form.config.oss_domain" placeholder="Bucket绑定的域名别名"/>
                         </a-form-item>
                          <a-form-item label="Bucket地域">
                             <a-input v-model:value="form.config.oss_region" placeholder="Bucket所在域名"/>
