@@ -92,16 +92,15 @@ export class AliPushStrategy extends IPushStrategy {
         this.accessKeySecret = config.secretKey;
         if (config.type === 'SSL') {
             // 验证ssl
-            const res = await this.validateSSL(config);
-            console.log(res);
+            return await this.validateSSL(config);
         }
         if (config.type === 'CDN') {
             // 验证ssl
-            return this.validateCDN(config);
+            return await this.validateCDN(config);
         }
         if (config.type === 'OSS') {
             // 验证OSS
-            return this.validateOSS(config);
+            return await this.validateOSS(config);
         }
     }
 
@@ -132,7 +131,6 @@ export class AliPushStrategy extends IPushStrategy {
 
     // 推送证书
     async push(config, certData, oncall = null) {
-        console.log(config);
         this.accessKeyId = config.accessKey;
         this.accessKeySecret = config.secretKey;
 
@@ -351,22 +349,8 @@ export class AliPushStrategy extends IPushStrategy {
             signedHeaders,
             hashedRequestPayload
         ].join('\n');
-//                 canonicalRequest = `GET
-// /xinu-note-images/
-// cname
-// host:xinu-note-images.oss-cn-beijing.aliyuncs.com
-// x-oss-content-sha256:UNSIGNED-PAYLOAD
-// x-oss-date:20250301T095042Z
-//
-// host;x-oss-content-sha256;x-oss-date
-// UNSIGNED-PAYLOAD`
-
-        console.log("==============canonicalRequest==========");
-        console.log(canonicalRequest)
-
 
         // 获取当前日期
-        const date = new Date();
         const dateStamp = signRequest.headers['x-oss-date'].split('T')[0].replace(/-/g, '');
         const dateTimeStamp = signRequest.headers['x-oss-date'];
 
@@ -379,15 +363,10 @@ export class AliPushStrategy extends IPushStrategy {
             this._sha256Hex(canonicalRequest)
         ].join('\n');
 
-        console.log('========stringToSign==========')
-        console.log(stringToSign)
         // 计算签名
         const signature = this._calculateOssSignature(dateStamp, stringToSign);
-        console.log("==============signature==========");
-        console.log(signature)
         // 构建授权头
         signRequest.headers['Authorization'] = `OSS4-HMAC-SHA256 Credential=${this.accessKeyId}/${dateStamp}/${this.region}/oss/aliyun_v4_request,AdditionalHeaders=${signedHeaders},Signature=${signature}`;
-        console.log(signRequest.headers['Authorization']);
     }
 
     _getContentMd5(data) {
@@ -494,7 +473,6 @@ export class AliPushStrategy extends IPushStrategy {
             }
             return result;
         } catch (error) {
-            console.log(error);
             throw new Error(`API请求错误: ${error.message}`);
         }
     }
@@ -506,7 +484,6 @@ export class AliPushStrategy extends IPushStrategy {
             if (result?.Error) {
                 throw new Error(result.Error?.Message || '未知错误');
             }
-            console.log(result);
             return result;
         } catch (error) {
             throw new Error(`API请求错误: ${error.message}`);

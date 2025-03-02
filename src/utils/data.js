@@ -252,7 +252,7 @@ export const RecordTypes = [
 ]
 
 // 推送平台
-export const platformTypes = reactive({
+export const platformTypes = {
     'ssh': {
         key: "ssh",
         name: "SSH",
@@ -300,8 +300,8 @@ export const platformTypes = reactive({
             alb_protocol: "",
             dcdn_domain: "",
             oss_bucket: "",
-            oss_region: "",
+            oss_region: undefined,
             oss_domain: "",
         },
     }
-})
+}

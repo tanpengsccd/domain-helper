@@ -7,6 +7,7 @@ import {
     openDoc, savePushPlatform,
 } from "@/utils/tool";
 import {PushServiceFactory} from "@/service/PushPlatform/PushService.js";
+import {platformTypes} from "@/utils/data";
 
 const {useToken} = theme;
 const {token} = useToken();
@@ -15,9 +16,133 @@ const searchKey = ref("");
 const allPushplatform = ref(getAllPushplatform());
 const keySwitch = ref(false);
 const isEdit = ref(false);
-import {platformTypes} from "@/utils/data";
 
-const platform_types = platformTypes;
+ // 深度拷贝
+const platform_types = JSON.parse(JSON.stringify(platformTypes));
+
+// 添加阿里云 OSS 地域数据
+const ossRegions = [
+    {
+        "value": "cn-hangzhou",
+        "label": "华东1（杭州）"
+    },
+    {
+        "value": "cn-shanghai",
+        "label": "华东2（上海）"
+    },
+    {
+        "value": "cn-nanjing",
+        "label": "华东5（南京-本地地域）"
+    },
+    {
+        "value": "cn-fuzhou",
+        "label": "华东6（福州-本地地域）"
+    },
+    {
+        "value": "cn-wuhan",
+        "label": "华中1（武汉-本地地域）"
+    },
+    {
+        "value": "cn-qingdao",
+        "label": "华北1（青岛）"
+    },
+    {
+        "value": "cn-beijing",
+        "label": "华北2（北京）"
+    },
+    {
+        "value": "cn-zhangjiakou",
+        "label": "华北3（张家口）"
+    },
+    {
+        "value": "cn-huhehaote",
+        "label": "华北5（呼和浩特）"
+    },
+    {
+        "value": "cn-wulanchabu",
+        "label": "华北6（乌兰察布）"
+    },
+    {
+        "value": "cn-shenzhen",
+        "label": "华南1（深圳）"
+    },
+    {
+        "value": "cn-heyuan",
+        "label": "华南2（河源）"
+    },
+    {
+        "value": "cn-guangzhou",
+        "label": "华南3（广州）"
+    },
+    {
+        "value": "cn-chengdu",
+        "label": "西南1（成都）"
+    },
+    {
+        "value": "cn-hongkong",
+        "label": "中国（香港）"
+    },
+    {
+        "value": "us-west-1",
+        "label": "美国（硅谷）"
+    },
+    {
+        "value": "us-east-1",
+        "label": "美国（弗吉尼亚）"
+    },
+    {
+        "value": "ap-northeast-1",
+        "label": "日本（东京）"
+    },
+    {
+        "value": "ap-northeast-2",
+        "label": "韩国（首尔）"
+    },
+    {
+        "value": "ap-southeast-1",
+        "label": "新加坡"
+    },
+    {
+        "value": "ap-southeast-2",
+        "label": "澳大利亚（悉尼）"
+    },
+    {
+        "value": "ap-southeast-3",
+        "label": "马来西亚（吉隆坡）"
+    },
+    {
+        "value": "ap-southeast-5",
+        "label": "印度尼西亚（雅加达）"
+    },
+    {
+        "value": "ap-southeast-6",
+        "label": "菲律宾（马尼拉）"
+    },
+    {
+        "value": "ap-southeast-7",
+        "label": "泰国（曼谷）"
+    },
+    {
+        "value": "ap-south-1",
+        "label": "印度（孟买）"
+    },
+    {
+        "value": "eu-central-1",
+        "label": "德国（法兰克福）"
+    },
+    {
+        "value": "eu-west-1",
+        "label": "英国（伦敦）"
+    },
+    {
+        "value": "me-east-1",
+        "label": "阿联酋（迪拜）"
+    },
+    {
+        "value": "rg-china-mainland",
+        "label": "无地域属性（中国内地）"
+    }
+];
 
 const form = reactive({
     _id: null,
@@ -185,17 +310,7 @@ const saveSetting = async () => {
 
 const clearSetting = () => {
     form.tag = "";
-    form.config = {
-        host: "",
-        port: 22,
-        username: "",
-        password: "",
-        privateKey: "",
-        certPath: "",
-        keyPath: "",
-        restartCommand: "",
-        beforePushCommand: "",
-    };
+    form.config = platformTypes[form.platform_type].config;
     importPlatformId.value = undefined;
 };
 
@@ -508,23 +623,27 @@ const handleImportChange = (value) => {
                         <a-input v-model:value="form.config.accessKey" placeholder="阿里云 AccessKey ID"/>
                     </a-form-item>
                     <a-form-item label="AccessKey Secret">
-                        <a-input-password v-model:value="form.config.secretKey" placeholder="阿里云 AccessKey Secret"/>
+                        <a-input v-model:value="form.config.secretKey" placeholder="阿里云 AccessKey Secret"/>
                     </a-form-item>
                     <a-form-item label="推送渠道">
                         <a-segmented block v-model:value="form.config.type" :options="['SSL', 'CDN', 'OSS']"/>
                     </a-form-item>
                     <a-form-item label="CDN域名" v-if="form.config.type === 'CDN'">
-                        <a-input v-model:value="form.config.cdn_domain" placeholder="CDN域名"/>
+                        <a-input v-model:value="form.config.cdn_domain" placeholder="CDN绑定的自定义域名"/>
                     </a-form-item>
                     <template v-if="form.config.type === 'OSS'">
                         <a-form-item label="Bucket名称">
                             <a-input v-model:value="form.config.oss_bucket" placeholder="Bucket名称"/>
                         </a-form-item>
                         <a-form-item label="Bucket域名">
-                            <a-input v-model:value="form.config.oss_domain" placeholder="Bucket绑定的域名别名"/>
+                            <a-input v-model:value="form.config.oss_domain" placeholder="Bucket绑定的自定义域名"/>
                         </a-form-item>
                          <a-form-item label="Bucket地域">
-                            <a-input v-model:value="form.config.oss_region" placeholder="Bucket所在域名"/>
+                            <a-select v-model:value="form.config.oss_region" show-search placeholder="请选择Bucket所在地域" style="width: 100%">
+                                <a-select-option v-for="region in ossRegions" :key="region.value" :value="region.value">
+                                    {{ region.label }}
+                                </a-select-option>
+                            </a-select>
                         </a-form-item>
                     </template>
                 </template>
