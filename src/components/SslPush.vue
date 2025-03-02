@@ -20,11 +20,13 @@ const {proxy} = getCurrentInstance();
 
 const form = reactive({
     platform: undefined,
+    platforms: [],
     ssl: undefined,
 })
 import {platformTypes} from "@/utils/data";
+
 const getPushplatformInfo = (type, key = null) => {
-    return key ? platformTypes[type][key] : platform_types[type];
+    return key ? platformTypes[type][key] : platformTypes[type];
 };
 const paltformInfo = reactive({
     _id: '',
@@ -32,6 +34,7 @@ const paltformInfo = reactive({
     tag: "",
     config: undefined
 });
+const selectedPlatforms = ref([]);
 const sslInfo = ref(null);
 
 const isDoing = ref(false);
@@ -59,7 +62,7 @@ onBeforeUnmount(() => {
     proxy.$eventBus.off("open-ssl-push", openModal)
 })
 
-const pushRes = ref(null);
+const pushResults = ref([]);
 
 function randomInRange(min, max) {
     return Math.random() * (max - min) + min;
@@ -89,67 +92,128 @@ const flowers = () => {
     }, 300)
 }
 
-const handleOk = async () => {
+const updateSelectedPlatforms = () => {
+    selectedPlatforms.value = [];
+    if (form.platform) {
+        const platform = allPlatform.value.find(item => item._id === form.platform);
+        if (platform) {
+            selectedPlatforms.value.push({
+                _id: platform._id,
+                platform_type: platform.platform_type,
+                tag: platform.tag,
+                config: platform.config
+            });
+        }
+    } else if (form.platforms && form.platforms.length > 0) {
+        form.platforms.forEach(platformId => {
+            const platform = allPlatform.value.find(item => item._id === platformId);
+            if (platform) {
+                selectedPlatforms.value.push({
+                    _id: platform._id,
+                    platform_type: platform.platform_type,
+                    tag: platform.tag,
+                    config: platform.config
+                });
+            }
+        });
+    }
+}
 
+const pushToOnePlatform = async (platform, index) => {
+    steps.value.push(`[${index + 1}/${selectedPlatforms.value.length}] 推送证书到 ${platform.tag}`);
 
-    // 判断是否选择了平台
-    if (!form.platform) {
-        message.error("请选择推送平台");
-        return;
-    }
-    if (!paltformInfo._id) {
-        message.error("请选择推送平台");
-    }
-    // 如果是ssh 必须有证书替换的路径
-    if (paltformInfo.platform_type === 'ssh' && (!paltformInfo.config.certPath || !paltformInfo.config.keyPath)) {
-        message.error("请填写证书路径");
-        return;
-    }
-    if (!sslInfo.value) {
-        throw new Error('证书信息不存在');
-    }
-    confirmLoading.value = true;
-    isDoing.value = true;
-    steps.value = [`推送证书到 ${paltformInfo.tag}`];
     try {
-        // 这里应该添加实际的证书推送逻辑
-        // 使用 sslInfo.value 中的证书信息
-        const pushService = PushServiceFactory.getService(paltformInfo.platform_type);
-        // await pushService.validate(paltformInfo.config);
-        pushRes.value = await pushService.push(paltformInfo.config, {
+        if (platform.platform_type === 'ssh' && (!platform.config.certPath || !platform.config.keyPath)) {
+            steps.value.push(`❌ ${platform.tag}: 未配置证书路径`);
+            return {success: false, platform: platform, msg: "未配置证书路径"};
+        }
+
+        const pushService = PushServiceFactory.getService(platform.platform_type);
+        const result = await pushService.push(platform.config, {
             cert: sslInfo.value.cert,
             key: sslInfo.value.key,
             domain: sslInfo.value.domain,
         }, (type, extData) => {
+            let stepMsg = `[${platform.tag}] `;
             switch (type) {
                 case "error":
-                    steps.value.push(`❌ ${extData.msg}`);
+                    stepMsg += `❌ ${extData.msg}`;
                     break;
                 case "success":
-                    steps.value.push(`✅ ${extData.msg}`);
+                    stepMsg += `✅ ${extData.msg}`;
                     break;
                 case "connected":
                 case "beforePush":
                 case "afterPush":
                 case "beforeCommand":
                 case "afterCommand":
-                    steps.value.push(extData.msg);
+                    stepMsg += extData.msg;
                     break;
                 default:
-                    steps.value.push(extData.msg);
+                    stepMsg += extData.msg;
                     break;
             }
-        })
-        steps.value.push('证书推送成功 🎉🎉');
-        open.value = false;
-        flowers();
-        successModal.value = true;
-        setTimeout(() => {
-            updateOneDomainMonitor(sslInfo.value.subdomain);
-        }, 3000)
+            steps.value.push(stepMsg);
+        });
+
+        steps.value.push(`✅ ${platform.tag}: 证书推送成功`);
+        return {success: true, platform: platform, ...result};
+    } catch (e) {
+        steps.value.push(`❌ ${platform.tag}: 证书推送失败 - ${e.toString()}`);
+        return {success: false, platform: platform, error: e.toString()};
+    }
+}
+
+const handleOk = async () => {
+    if (!form.platform && (!form.platforms || form.platforms.length === 0)) {
+        message.error("请选择至少一个推送平台");
+        return;
+    }
+
+    updateSelectedPlatforms();
+
+    if (selectedPlatforms.value.length === 0) {
+        message.error("请选择至少一个推送平台");
+        return;
+    }
+
+    if (!sslInfo.value) {
+        throw new Error('证书信息不存在');
+    }
+
+    confirmLoading.value = true;
+    isDoing.value = true;
+    steps.value = [`开始推送证书到 ${selectedPlatforms.value.length} 个平台`];
+    pushResults.value = [];
+
+    try {
+        for (let i = 0; i < selectedPlatforms.value.length; i++) {
+            const platform = selectedPlatforms.value[i];
+            const result = await pushToOnePlatform(platform, i);
+            pushResults.value.push(result);
+        }
+
+        const successCount = pushResults.value.filter(r => r.success).length;
+        const failCount = pushResults.value.length - successCount;
+
+        if (successCount > 0) {
+            steps.value.push(`证书推送完成: ${successCount}个成功, ${failCount}个失败 🎉`);
+            open.value = false;
+            flowers();
+            successModal.value = true;
+            setTimeout(() => {
+                updateOneDomainMonitor(sslInfo.value.subdomain);
+            }, 3000);
+        } else {
+            notification.error({
+                message: '证书推送失败',
+                description: '所有平台推送均失败，请检查配置',
+                duration: 10
+            });
+        }
     } catch (e) {
         notification.error({
-            message: '证书推送失败',
+            message: '证书推送过程中出错',
             description: e.toString(),
             duration: 10
         });
@@ -159,7 +223,6 @@ const handleOk = async () => {
 };
 
 const openModal = (ssl) => {
-    // 判断是否有平台，没有的话跳转平台添加页面
     init();
     if (allPlatform.value.length === 0) {
         message.error("请先添加推送平台");
@@ -169,9 +232,6 @@ const openModal = (ssl) => {
         form.ssl = ssl._id;
         sslInfo.value = ssl;
     }
-    // 默认选择第一个平台
-    form.platform = allPlatform.value[0]._id;
-    setPaltform();
     open.value = true;
 }
 
@@ -182,13 +242,25 @@ const indicator = h(SettingOutlined, {
     spin: true,
 });
 
-
 const setPaltform = () => {
     const platform = allPlatform.value.find(item => item._id === form.platform);
-    paltformInfo._id = platform._id;
-    paltformInfo.platform_type = platform.platform_type;
-    paltformInfo.tag = platform.tag;
-    paltformInfo.config = platform.config;
+    if (platform) {
+        paltformInfo._id = platform._id;
+        paltformInfo.platform_type = platform.platform_type;
+        paltformInfo.tag = platform.tag;
+        paltformInfo.config = platform.config;
+    }
+}
+
+const togglePushMode = (checked) => {
+    if (!checked) { // 单平台模式
+        form.platforms = [];
+        form.platform = allPlatform.value.length > 0 ? allPlatform.value[0]._id : undefined;
+        setPaltform();
+    } else { // 多平台模式
+        form.platform = undefined;
+        form.platforms = [];
+    }
 }
 
 const init = () => {
@@ -196,12 +268,15 @@ const init = () => {
     refreshPushplatform()
     paltformInfo._id = '';
     form.platform = undefined;
+    form.platforms = [];
     form.ssl = undefined;
     sslInfo.value = null;
     successModal.value = false;
     confirmLoading.value = false;
     isDoing.value = false;
     steps.value = [];
+    pushResults.value = [];
+    togglePushMode(false); // 默认为单平台模式
 }
 
 </script>
@@ -210,7 +285,7 @@ const init = () => {
     <div class="push-container">
         <a-modal v-model:open="open" title="SSL证书推送" :cancel-button-props="{ disabled: confirmLoading }"
                  ok-text="开始推送"
-                 cancel-text="取消" :confirm-loading="confirmLoading" @ok="handleOk" width="400px">
+                 cancel-text="取消" :confirm-loading="confirmLoading" @ok="handleOk" width="500px">
             <div style="height: 20px;"></div>
             <a-form :model="form" v-if="!isDoing">
                 <a-form-item label="选择证书">
@@ -220,8 +295,55 @@ const init = () => {
                         </a-select-option>
                     </a-select>
                 </a-form-item>
-                <a-form-item label="推送平台">
+
+                <a-form-item label="多平台推送">
+                    <a-switch @change="togglePushMode" :checked="form.platform === undefined"/>
+                    <span style="margin-left: 8px;">{{ form.platform === undefined ? '已开启' : '已关闭' }}</span>
+                </a-form-item>
+
+                <a-form-item label="推送平台" v-if="form.platform !== undefined">
                     <a-select v-model:value="form.platform" show-search @change="setPaltform">
+                        <a-select-option v-for="item in allPlatform" :key="item._id" :value="item._id">
+                            {{ getPushplatformInfo(item.platform_type, 'name') }} - {{ item.tag }}
+                        </a-select-option>
+                    </a-select>
+                </a-form-item>
+
+                <template v-if="form.platform !== undefined">
+                    <template v-if="paltformInfo.platform_type === 'ssh'">
+                        <a-form-item label="主机地址">
+                            <a-input disabled :value="`${paltformInfo.config.host}:${paltformInfo.config.port}`"
+                                     placeholder="请输入主机IP或域名"/>
+                        </a-form-item>
+                        <a-form-item label="证书路径">
+                            <a-input v-model:value="paltformInfo.config.certPath"
+                                     placeholder="证书存放路径，具体到文件"/>
+                        </a-form-item>
+                        <a-form-item label="私钥路径">
+                            <a-input v-model:value="paltformInfo.config.keyPath" placeholder="私钥存放路径，具体到文件"/>
+                        </a-form-item>
+                        <a-form-item label="前置命令">
+                            <a-input v-model:value="paltformInfo.config.restartCommand" placeholder="更新证书前的操作， 如 通过sudo授予目录权限"/>
+                        </a-form-item>
+                         <a-form-item label="后置命令">
+                            <a-input v-model:value="paltformInfo.config.restartCommand" placeholder="更新证书后的操作， 例 nginx -s reload"/>
+                        </a-form-item>
+                    </template>
+                    <template v-if="paltformInfo.platform_type === 'qiniu'">
+                        <a-form-item label="CDN域名" extra="如果设置了该值，会尝试将证书直接绑定到该域名上">
+                            <a-input v-model:value="paltformInfo.config.cdnDomain" placeholder="[选填] CDN域名"/>
+                        </a-form-item>
+                    </template>
+                </template>
+
+                <a-form-item label="推送平台" v-else>
+                    <a-select
+                        v-model:value="form.platforms"
+                        mode="multiple"
+                        show-search
+                        placeholder="请选择多个推送平台"
+                        style="width: 100%"
+                    >
                         <a-select-option v-for="item in allPlatform" :key="item._id" :value="item._id">
                             {{ getPushplatformInfo(item.platform_type, 'name') }} - {{ item.tag }}
                         </a-select-option>
@@ -237,7 +359,7 @@ const init = () => {
             </div>
         </a-modal>
 
-        <a-modal v-model:open="successModal" :footer="false" width="400px">
+        <a-modal v-model:open="successModal" :footer="false" width="500px">
             <template #title>
                 <a-flex justify="center">
                     <a-typography-title :level="5">
@@ -246,15 +368,33 @@ const init = () => {
                 </a-flex>
             </template>
 
-            <a-space direction="vertical">
-                <div>证书已成功推送到 <span :style="{ color: colorPrimary }">{{ paltformInfo.tag }}</span></div>
-                <template v-if="pushRes.msg">
-                    <p v-html="pushRes.msg"></p>
-                </template>
-                <template v-if="paltformInfo.platform_type === 'ssh'">
-                    <a-typography-text>证书文件路径: {{ paltformInfo.config?.certPath }}</a-typography-text>
-                    <a-typography-text>私钥文件路径: {{ paltformInfo.config?.keyPath }}</a-typography-text>
-                </template>
+            <a-space direction="vertical" style="width: 100%">
+                <div>证书已成功推送到 <span
+                    :style="{ color: colorPrimary }">{{ pushResults.filter(r => r.success).length }}</span> 个平台
+                </div>
+
+                <a-collapse v-if="pushResults.length > 0">
+                    <a-collapse-panel v-for="(result, index) in pushResults" :key="index"
+                                      :header="result.platform.tag + (result.success ? ' ✅' : ' ❌')">
+                        <template v-if="result.success">
+                            <div v-if="result.msg" v-html="result.msg"></div>
+                            <template v-if="result.platform.platform_type === 'ssh'">
+                                <a-typography-text>证书文件路径: {{
+                                        result.platform.config?.certPath
+                                    }}
+                                </a-typography-text>
+                                <br/>
+                                <a-typography-text>私钥文件路径: {{
+                                        result.platform.config?.keyPath
+                                    }}
+                                </a-typography-text>
+                            </template>
+                        </template>
+                        <template v-else>
+                            <a-typography-text type="danger">{{ result.error || '推送失败' }}</a-typography-text>
+                        </template>
+                    </a-collapse-panel>
+                </a-collapse>
             </a-space>
         </a-modal>
     </div>
