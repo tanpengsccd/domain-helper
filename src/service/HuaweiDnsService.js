@@ -117,7 +117,7 @@ class HuaweiDnsService {
                     headers: {'X-Auth-Token': token}
                 };
 
-                const response = await httpsRequestWithResponseHeader(options, null, true);
+                const response = await httpsRequestWithResponseHeader(options, null);
                 if (response.statusCode >= 400) {
                     reject(new Error(response.data.error.message))
                 }

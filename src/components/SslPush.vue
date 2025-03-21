@@ -323,7 +323,7 @@ const init = () => {
                             <a-input v-model:value="paltformInfo.config.keyPath" placeholder="私钥存放路径，具体到文件"/>
                         </a-form-item>
                         <a-form-item label="前置命令">
-                            <a-input v-model:value="paltformInfo.config.restartCommand" placeholder="更新证书前的操作， 如 通过sudo授予目录权限"/>
+                            <a-input v-model:value="paltformInfo.config.beforePushCommand" placeholder="更新证书前的操作， 如 通过sudo授予目录权限"/>
                         </a-form-item>
                          <a-form-item label="后置命令">
                             <a-input v-model:value="paltformInfo.config.restartCommand" placeholder="更新证书后的操作， 例 nginx -s reload"/>
