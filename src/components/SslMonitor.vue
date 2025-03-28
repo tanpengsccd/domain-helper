@@ -176,6 +176,16 @@ const batchDelete = async () => {
         hide();
     }
 };
+const addNewSslMonitor = () => {
+    batchAddVisible.value = true
+    // 输入框自动获取焦点
+    nextTick(() => {
+        const input = document.querySelector('.ant-modal-body textarea');
+        if (input) {
+            input.focus();
+        }
+    });
+}
 
 // 批量更新方法
 const batchUpdate = async () => {
@@ -242,11 +252,29 @@ const updateSslRecord = async (record) => {
     }
 };
 
+// 记录原始备注
+const originRemark = ref("");
 const editRemark = (key) => {
     editableData[key] = {...sslMonitorRecords.value.find(item => item._id === key)};
+    originRemark.value = editableData[key].remark || '';
+    // 备注输入框自动获取焦点
+    nextTick(() => {
+        const input = document.querySelector(`.editable-cell-input-wrapper input`);
+        if (input) {
+            input.focus();
+        }
+    });
 };
 
 const saveRemark = async (key) => {
+    // 如果备注没有变化，则不进行更新
+    if (editableData[key].remark === undefined) {
+        editableData[key].remark = ""
+    }
+    if (editableData[key].remark === originRemark.value) {
+        delete editableData[key];
+        return;
+    }
     try {
         const record = editableData[key];
         delete editableData[key];
@@ -413,7 +441,7 @@ onMounted(() => {
                     <a-button :disabled="selectedRowKeys.length === 0" @click="batchUpdate" :loading="loading"
                               :icon="h(MonitorOutlined)"/>
                 </a-tooltip>
-                <a-button type="primary" class="addBtn" @click="batchAddVisible = true">
+                <a-button type="primary" class="addBtn" @click="addNewSslMonitor">
                     监控新域名
                 </a-button>
             </a-space>

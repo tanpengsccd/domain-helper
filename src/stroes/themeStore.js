@@ -15,7 +15,7 @@ const defaultConfig = {
         feishu: "",
     },
     ssl: {
-        dns_verify: 'one', // local 或者 local
+        dns_verify: 'tcpmk', // local 或者 local 或者 tcpmk
         auto_acme: true, // 是否自动开始acme验证
     },
     ca: {
