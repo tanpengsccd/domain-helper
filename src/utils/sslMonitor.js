@@ -111,25 +111,46 @@ export function checkSSLCertificateExpiry(inputUrl) {
 
         const req = https.request(options, (res) => {
             const certificate = res.socket.getPeerCertificate(true);
-
             if (certificate) {
                 const expiryDate = new Date(certificate.valid_to);
                 // 如果拿到的证书就是过期的 直接报错
                 if (expiryDate.getTime() < Date.now()) {
                     reject(new Error('证书已过期，仅支持检查有效证书'));
                 }
-                // 检查是否为泛域名证书
-                const isWildcard = certificate.subjectaltname && certificate.subjectaltname.includes('*.');
-                resolve({
-                    timestamp: expiryDate.getTime(),
-                    isWildcard: isWildcard
+
+                // 拆解 subjectaltname
+                const certExistDomain = certificate.subjectaltname.split(',').map(item => {
+                   return item.trim().replace(/DNS:/, '');
                 });
+
+                // 判断 域名是否包含在其中
+                if (certExistDomain.includes(hostname)) {
+                    resolve({
+                        timestamp: expiryDate.getTime(),
+                        isWildcard: false
+                    });
+                    return;
+                }
+
+                certExistDomain.map(item => {
+                    if (item.indexOf('*') !== -1) {
+                        // 监测被查询的域名是否包含在泛域名中，监测的域名不一定是*开头的
+                        if (hostname.indexOf(item.replace('*.', '')) !== -1) {
+                            resolve({
+                                timestamp: expiryDate.getTime(),
+                                isWildcard: true
+                            });
+                        }
+                    }
+                })
+                // 检查是否为泛域名证书
+                reject(new Error(`证书支持的域名为 【${certExistDomain.join('、')}】，不支持 ${parsedUrl.hostname}`));
             } else {
                 reject(new Error('无法获取证书信息或请求失败'));
             }
         });
         // 设置超时处理
-        req.setTimeout(2000, () => {
+        req.setTimeout(4000, () => {
             req.destroy();
             reject(new Error('请求超时，请检查网络连接'));
         });
