@@ -3,16 +3,16 @@ import Likeplugin from "@/components/Likeplugin.vue";
 import SslApply from "@/components/SslApply.vue";
 import SslPush from "@/components/SslPush.vue";
 import SslDetail from "@/components/SslDetail.vue";
-import { useThemeStore } from '@/stroes/themeStore.js';
-import { getUnreadCount } from "@/utils/notification";
-import { monitorSSL } from "@/utils/sslMonitor";
-import { getSomeSsl } from "@/utils/tool";
-import { CommentOutlined, GiftOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons-vue';
-import { theme } from 'ant-design-vue';
+import {useThemeStore} from '@/stroes/themeStore.js';
+import {getUnreadCount} from "@/utils/notification";
+import {monitorSSL} from "@/utils/sslMonitor";
+import {getSomeSsl} from "@/utils/tool";
+import {CommentOutlined, GiftOutlined, MenuFoldOutlined, MenuUnfoldOutlined} from '@ant-design/icons-vue';
+import {theme} from 'ant-design-vue';
 import zhCN from 'ant-design-vue/es/locale/zh_CN';
-import { computed, getCurrentInstance, onMounted, onUnmounted, reactive, ref, watch } from "vue";
-import { useRoute, useRouter } from 'vue-router';
-import { getRealThemeMode, getThemeMode } from "./utils/theme";
+import {computed, getCurrentInstance, onMounted, onUnmounted, reactive, ref, watch} from "vue";
+import {useRoute, useRouter} from 'vue-router';
+import {getRealThemeMode, getThemeMode} from "./utils/theme";
 
 const router = useRouter();
 const route = useRoute();
@@ -122,11 +122,9 @@ const openSSL = () => {
 
 const feedback = () => {
     utools.fetchUserServerTemporaryToken().then((ret) => {
-        utools.ubrowser.goto('https://feedback.esion.xyz/#/auth?type=utools&pluginId=1863098983146651648&accessToken=' + ret.token)
-            .run({width: 1200, height: 800})
+        utools.shellOpenExternal('https://feedback.esion.xyz/#/auth?type=utools&pluginId=1863098983146651648&accessToken=' + ret.token);
     }).catch(e => {
         utools.showNotification('请先登录');
-        console.error(e);
     });
 }
 const likePlugin = ref(null);
