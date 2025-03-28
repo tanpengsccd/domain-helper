@@ -244,13 +244,17 @@ export async function addSslMonitor(obj, isEdit = false) {
         data.expire_time = obj.expire_time
         data.is_wildcard = obj.is_wildcard
     }
-    let {isWildcard, timestamp} = await checkSSLCertificateExpiry(url);
-    data.is_wildcard = isWildcard;
-    data.expire_time = timestamp;
-
-    // 存入utools
-    utools.dbStorage.setItem(key, data)
-
+    try {
+        let {isWildcard, timestamp} = await checkSSLCertificateExpiry(url);
+        data.is_wildcard = isWildcard;
+        data.expire_time = timestamp;
+        // 存入utools
+        utools.dbStorage.setItem(key, data)
+    } catch (error) {
+        // 失败后 删除监控的域名
+        utools.dbStorage.removeItem(key);
+        throw error;
+    }
     if (isEdit) {
         return;
     }
