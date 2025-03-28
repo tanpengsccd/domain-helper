@@ -85,82 +85,120 @@ async function getDnsRecord(hostname) {
 }
 
 
-export function checkSSLCertificateExpiry(inputUrl) {
+export async function checkSSLCertificateExpiry(inputUrl) {
+    // 输入验证
+    if (!inputUrl || typeof inputUrl !== 'string') {
+        throw new Error('无效的URL输入');
+    }
+
+    // 解析URL
+    let parsedUrl;
+    try {
+        parsedUrl = new url.URL(inputUrl);
+    } catch (error) {
+        throw new Error('URL解析失败: ' + error.message);
+    }
+
+    // 配置请求参数
+    const hostname = parsedUrl.hostname;
+    const port = parsedUrl.port || 443;
+    const requestOptions = {
+        hostname: normalizeHostname(hostname),
+        port,
+        method: 'HEAD',
+        agent: false,
+        rejectUnauthorized: false,
+        timeout: 2000,
+    };
+
+    try {
+        const certificate = await getCertificate(requestOptions);
+        return await analyzeCertificate(certificate, hostname);
+    } catch (error) {
+        throw error;
+    }
+}
+
+/**
+ * 规范化主机名，处理泛域名
+ * @param {string} hostname
+ * @returns {string}
+ */
+function normalizeHostname(hostname) {
+    return hostname.includes('*')
+        ? hostname.replace('*.', 'domainhelper.')
+        : hostname;
+}
+
+/**
+ * 获取SSL证书
+ * @param {object} options
+ * @returns {Promise<object>}
+ */
+function getCertificate(options) {
     return new Promise((resolve, reject) => {
-        // 解析输入URL
-        const parsedUrl = new url.URL(inputUrl);
-
-        // 获取主机名和端口
-        let hostname = parsedUrl.hostname;
-        const port = parsedUrl.port || 443; // 默认端口为443
-
-
-        // 如果hostname中 有 * 代表泛域名 ，替换为
-        if (hostname.indexOf('*') !== -1) {
-            hostname = hostname.replace('*.', 'domian_helper_666.');
-        }
-
-        const options = {
-            hostname: hostname,
-            port: port,
-            method: 'HEAD',
-            agent: false,
-            rejectUnauthorized: false, // 为了测试允许不受信任的证书
-            timeout: 2000,
-        };
-
         const req = https.request(options, (res) => {
-            const certificate = res.socket.getPeerCertificate(true);
-            if (certificate) {
-                const expiryDate = new Date(certificate.valid_to);
-                // 如果拿到的证书就是过期的 直接报错
-                if (expiryDate.getTime() < Date.now()) {
-                    reject(new Error('证书已过期，仅支持检查有效证书'));
-                }
-
-                // 拆解 subjectaltname
-                const certExistDomain = certificate.subjectaltname.split(',').map(item => {
-                   return item.trim().replace(/DNS:/, '');
-                });
-
-                // 判断 域名是否包含在其中
-                if (certExistDomain.includes(hostname)) {
-                    resolve({
-                        timestamp: expiryDate.getTime(),
-                        isWildcard: false
-                    });
-                    return;
-                }
-
-                certExistDomain.map(item => {
-                    if (item.indexOf('*') !== -1) {
-                        // 监测被查询的域名是否包含在泛域名中，监测的域名不一定是*开头的
-                        if (hostname.indexOf(item.replace('*.', '')) !== -1) {
-                            resolve({
-                                timestamp: expiryDate.getTime(),
-                                isWildcard: true
-                            });
-                        }
-                    }
-                })
-                // 检查是否为泛域名证书
-                reject(new Error(`证书支持的域名为 【${certExistDomain.join('、')}】，不支持 ${parsedUrl.hostname}`));
-            } else {
-                reject(new Error('无法获取证书信息或请求失败'));
+            const cert = res.socket.getPeerCertificate(true);
+            if (!cert) {
+                reject(new Error('无法获取证书信息'));
+                return;
             }
+            resolve(cert);
         });
-        // 设置超时处理
+
         req.setTimeout(4000, () => {
             req.destroy();
             reject(new Error('请求超时，请检查网络连接'));
         });
 
-        req.on('error', (e) => {
-            console.error(`请求错误: ${e.message}`);
-            reject(e);
+        req.on('error', (error) => {
+            reject(new Error(`请求失败: ${error.message}`));
         });
+
         req.end();
     });
+}
+
+/**
+ * 分析证书信息
+ * @param {object} certificate
+ * @param {string} hostname
+ * @returns {Promise<{timestamp: number, isWildcard: boolean}>}
+ */
+async function analyzeCertificate(certificate, hostname) {
+    const expiryDate = new Date(certificate.valid_to);
+    const currentTime = Date.now();
+
+    if (expiryDate.getTime() < currentTime) {
+        throw new Error('证书已过期');
+    }
+
+    const altNames = (certificate.subjectaltname || '')
+        .split(',')
+        .map(name => name.trim().replace('DNS:', ''));
+
+    const result = {
+        timestamp: expiryDate.getTime(),
+        isWildcard: false
+    };
+
+    // 直接匹配
+    if (altNames.includes(hostname)) {
+        return result;
+    }
+
+    // 检查泛域名匹配
+    for (const altName of altNames) {
+        if (altName.includes('*')) {
+            const domainPattern = altName.replace('*.', '');
+            if (hostname.endsWith(domainPattern)) {
+                result.isWildcard = true;
+                return result;
+            }
+        }
+    }
+
+    throw new Error(`证书支持的域名为 [${altNames.join(', ')}]，不支持 ${hostname}`);
 }
 
 
