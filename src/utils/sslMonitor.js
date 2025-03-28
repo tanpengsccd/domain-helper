@@ -261,7 +261,7 @@ export async function addSslMonitor(obj, isEdit = false) {
     }, () => {
         //
         window.updateUnreadCount();
-    })
+    }, key)
 }
 
 
@@ -423,12 +423,18 @@ export async function updateOneDomainMonitor(domain) {
 }
 
 
-export async function monitorSSL(onNotifcation, onError) {
+export async function monitorSSL(onNotifcation, onError, key = null) {
     const store = useThemeStore();
     const config = store.config;
 
     // 获取全部的监控记录
     let records = getAllSslMonitor();
+
+    if (key) {
+        // 只获取指定的监控记录
+        records = records.filter(record => record._id === key);
+    }
+
     // 过滤处于通知静默期的域名
     const now = Date.now();
     records = records.filter(record => {

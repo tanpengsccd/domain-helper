@@ -361,7 +361,8 @@ const actionColumn = {
     // fixed: 'right',
     width: 110,
 };
-import { debounce } from 'lodash-es';
+import {debounce} from 'lodash-es';
+
 const columns = computed(() => {
     const base = baseColumns;
     const special = nowDomainInfo.value.cloud_info.columns || [];
@@ -1045,10 +1046,10 @@ const getMonitorColor = (days) => {
                     >
                 </a-select>
                 <a-select v-if="['ali', 'tencent', 'huawei', 'west', 'volcengine'].includes(nowDomainInfo.cloud)"
-                    v-model:value="searchForm.status"
-                    allow-clear
-                    placeholder="解析状态"
-                    style="width: 100px"
+                          v-model:value="searchForm.status"
+                          allow-clear
+                          placeholder="解析状态"
+                          style="width: 100px"
                 >
                     <a-select-option value="true">启用</a-select-option>
                     <a-select-option value="false">暂停</a-select-option>
