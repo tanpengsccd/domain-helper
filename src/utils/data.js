@@ -41,6 +41,10 @@ export const cloudsData = [
                 align: 'center',
             },
         ],
+        mx: {min: 1, max: 50},
+        mx_default: 10,
+        ttl: {min: 600, max: 86400},
+        ttl_default: 600,
     },
     {
         name: "",
@@ -244,11 +248,10 @@ export const cloudsData = [
         ]
     }
 ]
-//  "MX" 记录搁置
 export const RecordTypes = [
     "A",
     "CNAME",
-    "TXT", "AAAA", "NS",
+    "TXT", "AAAA", "NS"
 ]
 
 // 推送平台

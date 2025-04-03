@@ -13,6 +13,8 @@ const form = reactive({
     RecordType: "A",
     Remark: "",
     Value: "",
+    TTL: 600,
+    MX: 10,
     proxied: false // cloudflare 专属， 默认关闭 是否开启代理
 })
 const domainInfo = ref(null)
@@ -34,6 +36,14 @@ const updateExistingValues = (existRecords) => {
 
 const openModal = (info, record = null, existRecords = []) => {
     domainInfo.value = info
+
+    if (info.cloud_info.mx) {
+        // 如果云服务商支持mx记录
+        RecordTypes.push("MX");
+        form.MX = info.cloud_info.mx_default;
+    }
+
+    console.log(record)
     open.value = true;
     form.SubDomain = record?.Name || ""
     form.RecordType = record?.Type || "A"
@@ -41,6 +51,9 @@ const openModal = (info, record = null, existRecords = []) => {
     form.Remark = record?.Remark || ""
     form.RecordId = record?.RecordId || ""
     form.proxied = record?.ProxyStatus || false
+    form.TTL = record?.TTL || 600
+
+    console.log(form.TTL)
     // 初始化已存在的记录值
     updateExistingValues(existRecords)
     handleTypeChange(form.RecordType)
@@ -154,6 +167,12 @@ const handleOk = () => {
                     :filter-option="filterOption"
                     placeholder="记录值"
                 ></a-auto-complete>
+            </a-form-item>
+            <a-form-item label="　　TTL" v-if="domainInfo.cloud_info.ttl_default">
+                <a-input-number style="width: 100%" v-model="form.TTL" :placeholder="`TTL 免费版本范围 [${domainInfo.cloud_info.ttl.min}, ${domainInfo.cloud_info.ttl.max}]`" :min="1" :max="86400"/>
+            </a-form-item>
+            <a-form-item label="MX优先级" v-if="form.RecordType === 'MX'">
+                <a-input-number style="width: 100%" v-model="form.MX" :placeholder="`MX优先级 范围 [${domainInfo.cloud_info.mx.min}, ${domainInfo.cloud_info.mx.max}]，越小优先级越高`" :min="domainInfo.cloud_info.mx.min" :max="domainInfo.cloud_info.mx.max"/>
             </a-form-item>
             <a-form-item label="　　备注" v-if="!['aws', 'west', 'spaceship'].includes(domainInfo.cloud)">
                 <a-input v-model:value="form.Remark" placeholder="备注"></a-input>
