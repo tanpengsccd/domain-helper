@@ -31,8 +31,8 @@ const filteredRecords = computed(() => {
         return sslMonitorRecords.value;
     }
     const keyword = searchText.value.toLowerCase();
-    return sslMonitorRecords.value.filter(record => 
-        record.uri.toLowerCase().includes(keyword) || 
+    return sslMonitorRecords.value.filter(record =>
+        record.uri.toLowerCase().includes(keyword) ||
         (record.remark && record.remark.toLowerCase().includes(keyword))
     );
 });
@@ -300,7 +300,7 @@ const handleBatchAdd = async () => {
     const domains = batchDomains.value.split('\n')
         .map(d => d.trim())
         .filter(d => d);
-    
+
     if (domains.length === 0) {
         message.warning('请输入要监控的域名');
         return;
@@ -314,7 +314,7 @@ const handleBatchAdd = async () => {
     batchAddLoading.value = true;
     try {
         const addRes = await batchAddSslMonitor(domains);
-        
+
         // 根据结果显示适当的消息
         if (addRes.successCount > 0 && addRes.errorCount === 0) {
             message.success(`成功添加 ${addRes.successCount} 个域名监控`);
@@ -324,42 +324,42 @@ const handleBatchAdd = async () => {
             Modal.info({
                 title: '部分域名添加成功',
                 content: h('div', null, [
-                    h('div', { 
-                        style: { 
-                            padding: '12px 16px', 
-                            backgroundColor: '#f6ffed', 
-                            border: '1px solid #b7eb8f', 
+                    h('div', {
+                        style: {
+                            padding: '12px 16px',
+                            backgroundColor: '#f6ffed',
+                            border: '1px solid #b7eb8f',
                             borderRadius: '4px',
                             marginBottom: '12px'
-                        } 
+                        }
                     }, [
-                        h('div', { style: { display: 'flex', alignItems: 'center' } }, [
-                            h('span', { 
-                                style: { 
-                                    color: '#52c41a', 
-                                    fontSize: '16px', 
+                        h('div', {style: {display: 'flex', alignItems: 'center'}}, [
+                            h('span', {
+                                style: {
+                                    color: '#52c41a',
+                                    fontSize: '16px',
                                     marginRight: '8px',
                                     fontWeight: 'bold'
-                                } 
+                                }
                             }, '✓'),
-                            h('span', { style: { color: '#52c41a', fontWeight: 'bold' } }, 
+                            h('span', {style: {color: '#52c41a', fontWeight: 'bold'}},
                                 `成功添加 ${addRes.successCount} 个域名监控`
                             )
                         ])
                     ]),
                     h('p', null, `${addRes.errorCount} 个域名添加失败`),
-                    h('div', { style: { maxHeight: '200px', overflow: 'auto', marginTop: '10px' } }, 
-                        h('div', { style: { border: '1px solid #f0f0f0', borderRadius: '4px' } },
-                            addRes.errorUrls.map((item, index) => 
-                                h('div', { 
-                                    style: { 
+                    h('div', {style: {maxHeight: '200px', overflow: 'auto', marginTop: '10px'}},
+                        h('div', {style: {border: '1px solid #f0f0f0', borderRadius: '4px'}},
+                            addRes.errorUrls.map((item, index) =>
+                                h('div', {
+                                    style: {
                                         padding: '8px 12px',
                                         borderBottom: index < addRes.errorUrls.length - 1 ? '1px solid #f0f0f0' : 'none',
                                         backgroundColor: index % 2 === 0 ? '#fafafa' : '#fff'
-                                    } 
+                                    }
                                 }, [
-                                    h('div', { style: { fontWeight: 'bold', marginBottom: '4px' } }, item.uri),
-                                    h('div', { style: { color: '#ff4d4f', fontSize: '13px' } }, 
+                                    h('div', {style: {fontWeight: 'bold', marginBottom: '4px'}}, item.uri),
+                                    h('div', {style: {color: '#ff4d4f', fontSize: '13px'}},
                                         item.error.message || '无法连接或证书无效'
                                     )
                                 ])
@@ -377,18 +377,18 @@ const handleBatchAdd = async () => {
                 title: '添加失败',
                 content: h('div', null, [
                     h('p', null, `${addRes.errorCount} 个域名添加失败`),
-                    h('div', { style: { maxHeight: '200px', overflow: 'auto', marginTop: '10px' } }, 
-                        h('div', { style: { border: '1px solid #f0f0f0', borderRadius: '4px' } },
-                            addRes.errorUrls.map((item, index) => 
-                                h('div', { 
-                                    style: { 
+                    h('div', {style: {maxHeight: '200px', overflow: 'auto', marginTop: '10px'}},
+                        h('div', {style: {border: '1px solid #f0f0f0', borderRadius: '4px'}},
+                            addRes.errorUrls.map((item, index) =>
+                                h('div', {
+                                    style: {
                                         padding: '8px 12px',
                                         borderBottom: index < addRes.errorUrls.length - 1 ? '1px solid #f0f0f0' : 'none',
                                         backgroundColor: index % 2 === 0 ? '#fafafa' : '#fff'
-                                    } 
+                                    }
                                 }, [
-                                    h('div', { style: { fontWeight: 'bold', marginBottom: '4px' } }, item.uri),
-                                    h('div', { style: { color: '#ff4d4f', fontSize: '13px' } }, 
+                                    h('div', {style: {fontWeight: 'bold', marginBottom: '4px'}}, item.uri),
+                                    h('div', {style: {color: '#ff4d4f', fontSize: '13px'}},
                                         item.error.message || '无法连接或证书无效'
                                     )
                                 ])
@@ -398,7 +398,7 @@ const handleBatchAdd = async () => {
                 ])
             });
         }
-        
+
         getRecords();
     } catch (error) {
         message.error('添加失败：' + error.message);
