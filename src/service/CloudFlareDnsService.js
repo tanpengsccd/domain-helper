@@ -79,6 +79,7 @@ class CloudflareDnsService {
                         Value: record.content,
                         Type: record.type,
                         TTL: record.ttl,
+                        MX: record.priority,
                         ProxyStatus: record.proxied, // cloudflare 代理状态
                         Remark: record.comment
                     }
@@ -96,14 +97,19 @@ class CloudflareDnsService {
     async addRecord(domain, record) {
         const {zone_id} = getDomain("cloudflare/" + domain)
         return new Promise((resolve, reject) => {
-                this.cfRest('POST', `/client/v4/zones/${zone_id}/dns_records`, {
+                let formData = {
                     type: record.type,
                     name: record.name === "@" ? '@' : `${record.name}.${domain}`,
                     content: record.value,
-                    ttl: 1,
+                    ttl: record.ttl,
                     proxied: record.proxied,
                     comment: record.remark,
-                }).then(response => {
+                }
+                // 如果是 MX 记录，添加 MX 字段
+                if (record.type === "MX") {
+                    formData.priority = record.mx;
+                }
+                this.cfRest('POST', `/client/v4/zones/${zone_id}/dns_records`, formData).then(response => {
                     if (!response.success) {
                         reject(new Error(`添加记录时出错: ${response.errors[0].message}`));
                     }
@@ -117,14 +123,21 @@ class CloudflareDnsService {
 
     async updateRecord(domain, record) {
         const {zone_id} = getDomain("cloudflare/" + domain)
+
+        let formData = {
+            type: record.type,
+            name: record.name === "@" ? '@' : `${record.name}.${domain}`,
+            content: record.value,
+            proxied: record.proxied,
+            comment: record.remark,
+            ttl: record.ttl,
+        };
+        // 如果是 MX 记录，添加 MX 字段
+        if (record.type === "MX") {
+            formData.priority = record.mx;
+        }
         return this.cfRest("PATCH", `/client/v4/zones/${zone_id}/dns_records/${record.id}`,
-            {
-                type: record.type,
-                name: record.name === "@" ? '@' : `${record.name}.${domain}`,
-                content: record.value,
-                proxied: record.proxied,
-                comment: record.remark,
-            })
+            formData)
     }
 
     async deleteRecord(domain, recordId) {

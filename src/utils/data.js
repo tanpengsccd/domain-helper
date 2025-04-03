@@ -215,7 +215,11 @@ export const cloudsData = [
                 width: 140,
                 align: 'center',
             },
-        ]
+        ],
+        mx: {min: 0, max: 65535},
+        mx_default: 100,
+        ttl: {min: 60, max: 86400},
+        ttl_default: 600,
     },
     {
         name: "",
