@@ -174,7 +174,7 @@ const handleOk = () => {
                 ></a-auto-complete>
             </a-form-item>
             <a-form-item label="　　TTL" v-if="domainInfo.cloud_info.ttl_default">
-                <a-input-number style="width: 100%" v-model:value="form.TTL" :placeholder="`TTL 免费版本范围 [${domainInfo.cloud_info.ttl.min}, ${domainInfo.cloud_info.ttl.max}]`" :min="1" :max="86400"/>
+                <a-input-number style="width: 100%" v-model:value="form.TTL" :placeholder="`TTL 免费版本范围 [${domainInfo.cloud_info.ttl.min}, ${domainInfo.cloud_info.ttl.max}]`" :min="1" :max="domainInfo.cloud_info.ttl.max"/>
             </a-form-item>
             <a-form-item label="MX优先级" v-if="form.RecordType === 'MX'">
                 <a-input-number style="width: 100%" v-model:value="form.MX" :placeholder="`MX优先级 范围 [${domainInfo.cloud_info.mx.min}, ${domainInfo.cloud_info.mx.max}]，越小优先级越高`" :min="domainInfo.cloud_info.mx.min" :max="domainInfo.cloud_info.mx.max"/>

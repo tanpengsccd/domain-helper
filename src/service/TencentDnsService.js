@@ -73,6 +73,7 @@ class TencentDnsService {
                             Status: item.Status === "ENABLE",
                             UpdatedOn: item.UpdatedOn,
                             Remark: item.Remark,
+                            MX: item.MX,
                             RecordLine: item.Line
                         }
                     })
@@ -86,14 +87,19 @@ class TencentDnsService {
 
     async addRecord(domain, record) {
         const action = 'CreateRecord';
-        const payload = JSON.stringify({
+        let formData = {
             Domain: domain,
             SubDomain: record.name,
             RecordType: record.type,
             RecordLine: '默认',
             Value: record.value,
             Remark: record.remark,
-        });
+            TTL: record.ttl || 600,
+        };
+        if (record.type === "MX") {
+            formData.MX = record.mx;
+        }
+        const payload = JSON.stringify(formData);
         return this._tencentRest(action, payload);
     }
 
@@ -101,7 +107,8 @@ class TencentDnsService {
 
         const oldRecord = (await this.listRecords(domain)).list.find(item => item.RecordId === record.id);
         const action = 'ModifyRecord';
-        const payload = JSON.stringify({
+
+        let formData = {
             Domain: domain,
             SubDomain: record.name,
             RecordId: record.id,
@@ -109,7 +116,12 @@ class TencentDnsService {
             RecordLine: oldRecord.RecordLine,
             Value: record.value,
             Remark: record.remark,
-        });
+            TTL: record.ttl || 600,
+        }
+        if (record.type === "MX") {
+            formData.MX = record.mx;
+        }
+        const payload = JSON.stringify(formData);
         return this._tencentRest(action, payload);
     }
 

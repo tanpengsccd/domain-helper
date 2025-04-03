@@ -77,7 +77,11 @@ export const cloudsData = [
                 key: 'Status',
                 canEdit: true,
             },
-        ]
+        ],
+        mx: {min: 1, max: 20},
+        mx_default: 10,
+        ttl: {min: 600, max: 604800},
+        ttl_default: 600,
     },
     {
         name: "",
