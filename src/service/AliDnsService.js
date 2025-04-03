@@ -112,6 +112,7 @@ class AliDnsService {
                         list: []
                     });
                 }
+                console.log(res.DomainRecords.Record)
                 resolve({
                     count: res.TotalCount,
                     list: res.DomainRecords.Record.map(item => {
@@ -122,7 +123,8 @@ class AliDnsService {
                             TTL: item.TTL,
                             Type: item.Type,
                             Status: item.Status === "ENABLE",
-                            Remark: item.Remark
+                            Remark: item.Remark,
+                            MX: item.Priority || '',
                         }
                     })
                 })
@@ -133,13 +135,21 @@ class AliDnsService {
     }
 
     async addRecord(domain, record) {
+        console.log(domain, record)
         const action = 'AddDomainRecord';
-        const payload = this._buildQuery(action, {
+
+        let formData = {
             DomainName: domain,
             RR: record.name,
             Type: record.type,
             Value: record.value,
-        });
+            TTL: record.ttl || 600,
+        };
+        if (record.type === 'MX') {
+            formData.Priority = record.mx || 10;
+        }
+
+        const payload = this._buildQuery(action, formData);
         return new Promise((resolve, reject) => {
             this._aliRest(action, payload).then(res => {
                 if (record.remark) {
@@ -180,15 +190,22 @@ class AliDnsService {
             throw new Error('未找到记录');
         }
 
-        const {name, type, value, remark, id} = record;
-        if (oldRecord.Name !== name || oldRecord.Type !== type || oldRecord.Value !== value) {
+        const {name, type, value, remark, id, ttl} = record;
+
+        let formData = {
+            RecordId: id,
+            RR: name,
+            Type: type,
+            Value: value,
+            TTL: ttl || 600,
+        };
+        if (type === 'MX') {
+            formData.Priority = record.mx || 10;
+        }
+
+        if (oldRecord.Name !== name || oldRecord.Type !== type || oldRecord.Value !== value || oldRecord.TTL !== ttl || (type === 'MX' && oldRecord.MX !== record.mx)) {
             const action = 'UpdateDomainRecord';
-            const payload = this._buildQuery(action, {
-                RecordId: id,
-                RR: name,
-                Type: type,
-                Value: value,
-            });
+            const payload = this._buildQuery(action, formData);
             await this._aliRest(action, payload);
         }
         // 如果remark不同，则更新remark

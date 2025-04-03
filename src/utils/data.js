@@ -248,10 +248,10 @@ export const cloudsData = [
         ]
     }
 ]
-export const RecordTypes = [
+export let RecordTypes = [
     "A",
     "CNAME",
-    "TXT", "AAAA", "NS"
+    "TXT", "AAAA", "NS", "MX"
 ]
 
 // 推送平台

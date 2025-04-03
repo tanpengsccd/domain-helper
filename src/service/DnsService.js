@@ -49,6 +49,11 @@ function validateDNSRecord(type, value) {
         if (!isValidHostname(value)) {
             throw new Error(`Invalid ${type} record: '${value}' is not a valid hostname.`);
         }
+    } else if (type === "MX") {
+        // 验证MX记录 (通常为有效的域名)
+        if (!isValidHostname(value)) {
+            throw new Error(`Invalid MX record: '${value}' is not a valid hostname.`);
+        }
     } else {
         // 不支持的类型
         throw new Error(`Unsupported DNS record type: '${type}'. Supported types are A, AAAA, TXT, NS, CNAME.`);

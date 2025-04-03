@@ -39,11 +39,16 @@ const openModal = (info, record = null, existRecords = []) => {
 
     if (info.cloud_info.mx) {
         // 如果云服务商支持mx记录
-        RecordTypes.push("MX");
+        if (!RecordTypes.includes("MX")) {
+            RecordTypes.push("MX");
+        }
         form.MX = info.cloud_info.mx_default;
+    } else {
+        // 如果云服务商不支持mx记录
+        if (RecordTypes.includes("MX")) {
+           RecordTypes =  RecordTypes.splice(RecordTypes.indexOf("MX"), 1);
+        }
     }
-
-    console.log(record)
     open.value = true;
     form.SubDomain = record?.Name || ""
     form.RecordType = record?.Type || "A"
@@ -52,8 +57,7 @@ const openModal = (info, record = null, existRecords = []) => {
     form.RecordId = record?.RecordId || ""
     form.proxied = record?.ProxyStatus || false
     form.TTL = record?.TTL || 600
-
-    console.log(form.TTL)
+    form.MX = record?.MX || 10
     // 初始化已存在的记录值
     updateExistingValues(existRecords)
     handleTypeChange(form.RecordType)
@@ -91,7 +95,6 @@ const handleOk = () => {
         confirmLoading.value = false;
         return;
     }
-
     // 检测域名及平台是否正确
     const dns = getDnsService(domainInfo.value.account_key,domainInfo.value.cloud, domainInfo.value.account_info.tokens);
     let baseParam = {
@@ -99,7 +102,9 @@ const handleOk = () => {
         name: form.SubDomain,
         type: form.RecordType,
         remark: form.Remark,
-        id: form.RecordId
+        id: form.RecordId,
+        ttl: form.TTL,
+        mx: form.MX,
     };
     if (domainInfo.value.cloud === 'cloudflare') {
         baseParam.proxied = form.proxied
@@ -169,10 +174,10 @@ const handleOk = () => {
                 ></a-auto-complete>
             </a-form-item>
             <a-form-item label="　　TTL" v-if="domainInfo.cloud_info.ttl_default">
-                <a-input-number style="width: 100%" v-model="form.TTL" :placeholder="`TTL 免费版本范围 [${domainInfo.cloud_info.ttl.min}, ${domainInfo.cloud_info.ttl.max}]`" :min="1" :max="86400"/>
+                <a-input-number style="width: 100%" v-model:value="form.TTL" :placeholder="`TTL 免费版本范围 [${domainInfo.cloud_info.ttl.min}, ${domainInfo.cloud_info.ttl.max}]`" :min="1" :max="86400"/>
             </a-form-item>
             <a-form-item label="MX优先级" v-if="form.RecordType === 'MX'">
-                <a-input-number style="width: 100%" v-model="form.MX" :placeholder="`MX优先级 范围 [${domainInfo.cloud_info.mx.min}, ${domainInfo.cloud_info.mx.max}]，越小优先级越高`" :min="domainInfo.cloud_info.mx.min" :max="domainInfo.cloud_info.mx.max"/>
+                <a-input-number style="width: 100%" v-model:value="form.MX" :placeholder="`MX优先级 范围 [${domainInfo.cloud_info.mx.min}, ${domainInfo.cloud_info.mx.max}]，越小优先级越高`" :min="domainInfo.cloud_info.mx.min" :max="domainInfo.cloud_info.mx.max"/>
             </a-form-item>
             <a-form-item label="　　备注" v-if="!['aws', 'west', 'spaceship'].includes(domainInfo.cloud)">
                 <a-input v-model:value="form.Remark" placeholder="备注"></a-input>

@@ -1178,6 +1178,7 @@ const getMonitorColor = (days) => {
                     <template v-if="column.key === 'Value'">
                         <div class="name" @click="xcopyText(record.Value)">
                             {{ record.Value }}
+                            <a-tag v-if="record.Type === 'MX'" size="small">优先级: {{record.MX}}</a-tag>
                         </div>
                     </template>
                     <template v-if="column.key === 'Status'">
