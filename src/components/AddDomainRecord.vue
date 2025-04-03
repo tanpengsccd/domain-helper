@@ -36,19 +36,6 @@ const updateExistingValues = (existRecords) => {
 
 const openModal = (info, record = null, existRecords = []) => {
     domainInfo.value = info
-
-    if (info.cloud_info.mx) {
-        // 如果云服务商支持mx记录
-        if (!RecordTypes.includes("MX")) {
-            RecordTypes.push("MX");
-        }
-        form.MX = info.cloud_info.mx_default;
-    } else {
-        // 如果云服务商不支持mx记录
-        if (RecordTypes.includes("MX")) {
-           RecordTypes =  RecordTypes.splice(RecordTypes.indexOf("MX"), 1);
-        }
-    }
     open.value = true;
     form.SubDomain = record?.Name || ""
     form.RecordType = record?.Type || "A"
@@ -84,6 +71,10 @@ const labelCol = {style: {width: '80px'}};
 const wrapperCol = {};
 
 const handleOk = () => {
+    if (form.RecordType === 'MX' && !domainInfo.value.cloud_info.mx_default) {
+        message.error("当前云服务商不支持MX记录");
+        return;
+    }
     confirmLoading.value = true;
     if (!form.SubDomain) {
         message.error("请输入主机记录");
@@ -162,7 +153,7 @@ const handleOk = () => {
             </a-form-item>
             <a-form-item label="记录类型">
                 <a-select v-model:value="form.RecordType" @change="handleTypeChange">
-                    <a-select-option v-for="(i, index) in RecordTypes" :key="index" :value="i">{{ i }}</a-select-option>
+                    <a-select-option :disabled="(i === 'MX' && !domainInfo.cloud_info.mx_default)" v-for="(i, index) in RecordTypes"  :key="index" :value="i">{{ i }} {{(i === 'MX' && !domainInfo.cloud_info.mx_default) ? '[暂不支持，陆续开发中]' : ''}}</a-select-option>
                 </a-select>
             </a-form-item>
             <a-form-item label="　记录值">

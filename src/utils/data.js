@@ -42,7 +42,7 @@ export const cloudsData = [
             },
         ],
         mx: {min: 1, max: 50},
-        mx_default: 10,
+        //mx_default: 10,
         ttl: {min: 600, max: 86400},
         ttl_default: 600,
     },
@@ -256,7 +256,7 @@ export const cloudsData = [
         ]
     }
 ]
-export let RecordTypes = [
+export const RecordTypes = [
     "A",
     "CNAME",
     "TXT", "AAAA", "NS", "MX"
