@@ -40,9 +40,9 @@ function validateDNSRecord(type, value) {
             throw new Error(`Invalid AAAA record: '${value}' is not a valid IPv6 address.`);
         }
     } else if (type === "TXT") {
-        // 验证TXT记录 (通常为任意字符串，假设长度不超过255个字符)
-        if (typeof value !== "string" || value.length > 255) {
-            throw new Error(`Invalid TXT record: '${value}' must be a string of at most 255 characters.`);
+        // 验证TXT记录 (通常为任意字符串，假设长度不超过1024个字符)
+        if (typeof value !== "string" || value.length > 1024) {
+            throw new Error(`Invalid TXT record: '${value}' must be a string of at most 1024 characters.`);
         }
     } else if (type === "NS" || type === "CNAME") {
         // 验证NS和CNAME记录 (通常为有效的域名)
