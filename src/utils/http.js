@@ -1,6 +1,6 @@
-const https = window.xhttps;
-const http = window.xhttp;
-const URL = window.xUrl.URL;
+const https = preload.https
+const http = preload.http
+const URL = preload.url.URL;
 
 export function httpsRequest(options, data, json = false, ext = {
     is_https: true
@@ -14,7 +14,7 @@ export function httpsRequest(options, data, json = false, ext = {
 
         // 如果请求方法是DELETE 并且有body，需要设置Content-Length
         if (options.method.toUpperCase() === 'DELETE' && data) {
-            options.headers['Content-Length'] = xBuffer.byteLength(data);
+            options.headers['Content-Length'] = preload.buffer.byteLength(data);
         }
 
         const req = httpReq.request({...options, timeout: 10000}, (res) => {
@@ -25,11 +25,11 @@ export function httpsRequest(options, data, json = false, ext = {
             });
 
             res.on('end', () => {
-                const buffer = xBuffer.concat(chunks);
+                const buffer = preload.buffer.concat(chunks);
                 let responseData;
 
                 if (charset && charset.toLowerCase() !== 'utf-8') {
-                    responseData = window.string2UTF8(buffer, charset, 'utf-8');
+                    responseData = preload.string2UTF8(buffer, charset, 'utf-8');
                 } else {
                     responseData = buffer.toString('utf8');
                 }
@@ -73,7 +73,7 @@ export function httpsRequestWithResponseHeader(options, data, ext = {
     return new Promise((resolve, reject) => {
         // 如果请求方法是DELETE 并且有body，需要设置Content-Length
         if (options.method.toUpperCase() === 'DELETE' && data) {
-            options.headers['Content-Length'] = xBuffer.byteLength(data);
+            options.headers['Content-Length'] = preload.buffer.byteLength(data);
         }
         const req = httpReq.request({...options, timeout: 5000}, (res) => {
             const charset = getCharset(res.headers['content-type']);
@@ -85,11 +85,11 @@ export function httpsRequestWithResponseHeader(options, data, ext = {
             });
 
             res.on('end', () => {
-                const buffer = xBuffer.concat(chunks);
+                const buffer = preload.buffer.concat(chunks);
                 let responseData;
 
                 if (charset && charset.toLowerCase() !== 'utf-8') {
-                    responseData = window.string2UTF8(buffer, charset, 'utf-8');
+                    responseData = preload.string2UTF8(buffer, charset, 'utf-8');
                 } else {
                     responseData = buffer.toString('utf8');
                 }

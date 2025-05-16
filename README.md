@@ -104,7 +104,7 @@
 // 新建salt.js文件
 // 在路径 /src/utils/ 下新建 salt.js 文件，内容如下：
 export function a() {
-    return generateKeyFromPassword("密码", "盐");
+    return preload.generateKeyFromPassword("密码", "盐");
 }
 ```
 

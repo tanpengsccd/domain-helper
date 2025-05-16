@@ -1,7 +1,7 @@
 import {httpsRequest} from './http';
 import dayjs from 'dayjs';
 
-const URL = window.xUrl.URL;
+const URL = preload.url.URL;
 /**
  * 发送企业微信机器人消息
  * @param {string} url Webhook URL

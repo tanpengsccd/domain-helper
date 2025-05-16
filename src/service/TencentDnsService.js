@@ -1,4 +1,4 @@
-const crypto = window.xcrypto;
+const crypto = preload.crypto;
 import {httpsRequest} from '@/utils/http';
 
 

@@ -1,7 +1,7 @@
 import {httpGet} from "@/utils/http";
 import {TcpmkDnsTool} from "@/utils/TcpmkDnsTool";
 
-const dns = window.xDns.promises
+const dns = preload.dns.promises
 
 const WAY_MAP = {
     google: "https://dns.google/resolve", // 需代理

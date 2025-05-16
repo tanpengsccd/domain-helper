@@ -696,7 +696,7 @@ const exportRecords = async (format = "json") => {
     }
 
     try {
-        const res = await window.xSaveFile(
+        const res = await preload.saveFile(
             {
                 title: "保存解析记录",
                 defaultPath: fileName,
@@ -738,7 +738,7 @@ const importRecords = async () => {
 
         if (!filePath || !filePath[0]) return;
         // 读取文件内容
-        const content = (await readLocalFile(filePath[0])).toString();
+        const content = (await preload.readLocalFile(filePath[0])).toString();
         let records;
         const fileExt = filePath[0].toLowerCase().split(".").pop();
         if (fileExt === "json") {

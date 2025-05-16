@@ -23,11 +23,12 @@ import {sendNotification} from "@/utils/notificationChan";
 
 const sslMonitorPrefix = 'sslmonitor';
 
-const url = window.xUrl;
-const https = window.xhttps;
+const url = preload.url;
+const https = preload.https;
 
-const dns = window.xDns;
-const {promisify} = window.xUtil;
+const dns = preload.dns
+
+const {promisify} = preload.util
 
 const resolveA = promisify(dns.resolve4);
 const resolveAAAA = promisify(dns.resolve6);
@@ -210,7 +211,7 @@ export async function addSslMonitor(obj, isEdit = false) {
     let {uri, type, address, domain, remark, cloud, account_key} = obj
     const url = uri.includes('://') ? uri : `https://${uri}`;
     // 解析url
-    const parsedUrl = new xUrl.URL(url);
+    const parsedUrl = new preload.url.URL(url);
     const port = parsedUrl.port || 443;
     uri = port === 443 ? parsedUrl.hostname : `${parsedUrl.hostname}:${port}`;
 

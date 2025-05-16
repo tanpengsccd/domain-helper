@@ -2,8 +2,8 @@ import {IPushStrategy} from './IPushStrategy.js';
 import {httpGet, httpMethod, httpPost} from "@/utils/http";
 import * as x509 from '@peculiar/x509'
 
-const crypto = window.xcrypto
-const url = window.xUrl
+const crypto = preload.crypto
+const url = preload.url
 
 // 七牛云 API 基础配置
 const QINIU_CONFIG = {

@@ -1,4 +1,4 @@
-const acme = window.xAcme
+const acme = preload.acme
 import * as x509 from '@peculiar/x509'
 
 

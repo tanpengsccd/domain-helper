@@ -1,6 +1,6 @@
 import {httpsRequest} from '@/utils/http';
 
-const crypto = window.xcrypto
+const crypto = preload.crypto
 const renewLink = "https://www.west.cn/manager/domain/";
 
 

@@ -2,8 +2,8 @@ import {IPushStrategy} from './IPushStrategy.js';
 import {httpGet, httpMethod, httpPost, httpsRequest} from "@/utils/http";
 import * as x509 from '@peculiar/x509'
 
-const crypto = window.xcrypto
-const url = window.xUrl
+const crypto = preload.crypto
+const url = preload.url
 // Request 类定义
 
 import dayjs from "dayjs";
@@ -421,7 +421,7 @@ export class AliPushStrategy extends IPushStrategy {
     }
 
     _hmac256(key, data) {
-        const hmac = window.xcrypto.createHmac('sha256', key);
+        const hmac = preload.crypto.createHmac('sha256', key);
         hmac.update(data);
         return hmac.digest('hex').toLowerCase();
     }
@@ -434,12 +434,12 @@ export class AliPushStrategy extends IPushStrategy {
 
         // 如果key是字符串，转换为Buffer
         if (typeof key === 'string') {
-            const hmac = window.xcrypto.createHmac('sha256', key);
+            const hmac = preload.crypto.createHmac('sha256', key);
             hmac.update(data);
             return hmac.digest();
         } else {
             // 如果key已经是Buffer或类似Buffer的对象
-            const hmac = window.xcrypto.createHmac('sha256', key);
+            const hmac = preload.crypto.createHmac('sha256', key);
             hmac.update(data);
             return hmac.digest();
         }
@@ -451,7 +451,7 @@ export class AliPushStrategy extends IPushStrategy {
             data = '';
         }
 
-        const hmac = window.xcrypto.createHmac('sha256', key);
+        const hmac = preload.crypto.createHmac('sha256', key);
         hmac.update(data);
         return hmac.digest('hex').toLowerCase();
     }
@@ -462,7 +462,7 @@ export class AliPushStrategy extends IPushStrategy {
             data = '';
         }
 
-        const hash = window.xcrypto.createHash('sha256');
+        const hash = preload.crypto.createHash('sha256');
         hash.update(data);
         return hash.digest('hex').toLowerCase();
     }
@@ -502,7 +502,7 @@ export class AliPushStrategy extends IPushStrategy {
     async _aliOssRest(options, data) {
         try {
             let result = await httpsRequest(options, data, false);
-            result = xml2Json(result, ['Cname']);
+            result = preload.xml2Json(result, ['Cname']);
             if (result?.Error) {
                 throw new Error(result.Error?.Message || '未知错误');
             }

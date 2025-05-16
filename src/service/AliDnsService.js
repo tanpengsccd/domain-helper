@@ -295,13 +295,13 @@ class AliDnsService {
     }
 
     _hmac256(key, data) {
-        const hmac = window.xcrypto.createHmac('sha256', key);
+        const hmac = preload.crypto.createHmac('sha256', key);
         hmac.update(data);
         return hmac.digest('hex').toLowerCase();
     }
 
     _sha256Hex(data) {
-        const hash = window.xcrypto.createHash('sha256');
+        const hash = preload.crypto.createHash('sha256');
         hash.update(data);
         return hash.digest('hex').toLowerCase();
     }

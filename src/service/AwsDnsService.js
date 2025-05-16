@@ -1,7 +1,7 @@
 import {httpsRequestWithResponseHeader} from '@/utils/http';
 import {containsAnySubstring, getDnsServer, getDomain} from "@/utils/tool";
 
-const crypto = window.xcrypto
+const crypto = preload.crypto
 
 // 文档地址 https://docs.aws.amazon.com/Route53/latest/APIReference/API_ListHostedZones.html
 
@@ -16,7 +16,7 @@ class AwsDnsService {
 
     async listDomains() {
         let response = await this._awsRest('GET', '2013-04-01/hostedzone', "maxitems=100");
-        response = window.xml2Json(response, ['HostedZone'])
+        response = preload.xml2Json(response, ['HostedZone'])
         const zones = response?.ListHostedZonesResponse?.HostedZones?.HostedZone || [];
         return (await Promise.all(zones.map(async item => {
             const domain = item.Name.slice(0, -1);
@@ -39,7 +39,7 @@ class AwsDnsService {
 
     async listRecords(domain) {
         const {zone_id} = getDomain("aws/" + domain);
-        const response = window.xml2Json(await this._awsRest('GET', `2013-04-01${zone_id}/rrset`, "maxitems=500"), ['ResourceRecordSet'])
+        const response = preload.xml2Json(await this._awsRest('GET', `2013-04-01${zone_id}/rrset`, "maxitems=500"), ['ResourceRecordSet'])
         let records = response.ListResourceRecordSetsResponse.ResourceRecordSets.ResourceRecordSet;
         return {
             count: records.length,
@@ -133,7 +133,7 @@ class AwsDnsService {
         };
         const {data: resData, statusCode} = await httpsRequestWithResponseHeader(options, data)
         if (statusCode >= 400) {
-            throw new Error(JSON.stringify(window.xml2Json(resData)));
+            throw new Error(JSON.stringify(preload.xml2Json(resData)));
         }
         return this.unescapeDns(resData);
     }

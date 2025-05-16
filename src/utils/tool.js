@@ -7,10 +7,10 @@ import * as x509 from '@peculiar/x509'
 import confetti from 'canvas-confetti';
 import {TcpmkDnsTool} from "@/utils/TcpmkDnsTool";
 
-const dns = window.xDns
+const dns = preload.dns
 
-const crypto = window.xcrypto
-const Buffer = window.xBuffer
+const crypto = preload.crypto
+const Buffer = preload.buffer
 
 // 格式化utc时间为本地时间
 export function formatDateLocal(date) {
@@ -130,13 +130,13 @@ export function congratulations() {
 export function getItem(key, initValue = null) {
     let value = utools.dbStorage.getItem(key);
     if (value) {
-        return JSON.parse(window.xDecrypt(value, a()));
+        return JSON.parse(preload.decrypt(value, a()));
     }
     return initValue;
 }
 
 export function setItem(key, value) {
-    utools.dbStorage.setItem(key, window.xEncrypt(JSON.stringify(value), a()));
+    utools.dbStorage.setItem(key, preload.encrypt(JSON.stringify(value), a()));
 }
 
 const prefix = "cloud"
@@ -181,7 +181,7 @@ export function getAllPushplatform() {
     return keys.map(item => {
         return {
             _id: item._id,
-            ...JSON.parse(window.xDecrypt(item.value, a()))
+            ...JSON.parse(preload.decrypt(item.value, a()))
         };
     }).reverse()
 }
@@ -283,7 +283,7 @@ export function getAllAccount() {
     return keys.map(item => {
         return {
             _id: item._id,
-            ...JSON.parse(window.xDecrypt(item.value, a()))
+            ...JSON.parse(preload.decrypt(item.value, a()))
         };
     }).map(item => {
         return {
@@ -380,7 +380,7 @@ export function exportSSL(item) {
     zipFile.file(`${prefix}.key`, item.key, {binary: false});
     zipFile.file(`${prefix}.cert`, item.cert, {binary: false});
     zipFile.generateAsync({type: "uint8array"}).then(file => {
-        window.xSaveFile({
+        preload.saveFile({
             title: '导出ssl证书',
             buttonLabel: '导出',
             defaultPath: utools.getPath('downloads') + `/${prefix}_ssl证书.zip`,

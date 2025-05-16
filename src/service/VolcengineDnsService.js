@@ -1,7 +1,7 @@
 import {httpsRequest} from '@/utils/http';
 import {containsAnySubstring, getDnsServer, getDomain} from "@/utils/tool";
 
-const crypto = window.xcrypto;
+const crypto = preload.crypto;
 
 
 // 火山引擎 https://www.volcengine.com/docs/6758/155086
