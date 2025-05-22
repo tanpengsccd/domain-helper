@@ -39,7 +39,6 @@ class UcloudDnsService {
             Action: action,
         };
         params.Signature = this._generateSignature(params);
-        console.log(params)
         const options = {
             hostname: 'api.ucloud.cn',
             method: method,

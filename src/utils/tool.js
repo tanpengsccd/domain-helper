@@ -80,7 +80,7 @@ export function parseCertificate(certString) {
                 return s.value;
             }),
             caUrl: certJson.extensions.filter(e => e.type === '1.3.6.1.5.5.7.1.1')[0].caIssuers[0].value,
-            ocsp: certJson.extensions.filter(e => e.type === '1.3.6.1.5.5.7.1.1')[0].ocsp[0].value,
+            ocsp: certJson.extensions.filter(e => e.type === '1.3.6.1.5.5.7.1.1')[0]?.ocsp[0]?.value,
         },
     };
 }
