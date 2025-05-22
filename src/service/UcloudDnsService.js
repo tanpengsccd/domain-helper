@@ -52,7 +52,6 @@ class UcloudDnsService {
             httpsRequest(options, JSON.stringify(params), true)
                 .then(response => {
                     if (response.RetCode !== 0) {
-                        console.log(response);
                         reject(new Error(response.Message || 'API request failed'));
                         return;
                     }
@@ -85,8 +84,6 @@ class UcloudDnsService {
         const data = await this._ucloudRest('POST', "UdnrDomainDNSQuery", {
             "Dn": domain
         });
-        console.log(data);
-
         return {
             count: data.Data ? data.Data.length : 0,
             list: data.Data.map(item => {
