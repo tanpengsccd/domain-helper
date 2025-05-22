@@ -6,7 +6,7 @@ import awslogo from "@/assets/cloud/aws.png";
 import volcengineLogo from "@/assets/cloud/volcengine.png";
 import westLogo from "@/assets/cloud/west.png";
 import spaceshipLogo from "@/assets/cloud/spaceship.png";
-import {reactive} from "vue";
+import ucloudLogo from "@/assets/cloud/ucloud.png";
 
 export const cloudsData = [
     {
@@ -251,6 +251,25 @@ export const cloudsData = [
             },
             {
                 key: "Secret",
+                value: ""
+            }
+        ]
+    },
+    {
+        name: "",
+        title: "UCloud",
+        key: "ucloud",
+        icon: ucloudLogo,
+        color: "#3860F4",
+        ttl: {min: 60, max: 86400},
+        ttl_default: 600,
+        tokens: [
+            {
+                key: "PublicKey",
+                value: ""
+            },
+            {
+                key: "PrivateKey",
                 value: ""
             }
         ]

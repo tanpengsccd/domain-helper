@@ -6,6 +6,7 @@ import AwsDnsService from "@/service/AwsDnsService";
 import VolcengineDnsService from "@/service/VolcengineDnsService";
 import SpaceshipDnsService from "@/service/SpaceshipDnsService";
 import WestDnsService from "@/service/WestDnsService";
+import UcloudDnsService from "@/service/UcloudDnsService";
 
 const DNS_MAP_SERVICE = {}
 
@@ -18,6 +19,7 @@ const DNS_PROVIDER = {
     'volcengine': VolcengineDnsService,
     "spaceship": SpaceshipDnsService,
     "west": WestDnsService,
+    "ucloud": UcloudDnsService,
 }
 
 
@@ -147,6 +149,10 @@ class DnsService {
     }
 
     async checkDomain(domain) {
+        // 如果provider 有方法
+        if (typeof this.provider.checkDomain === "function") {
+            return this.provider.checkDomain(domain);
+        }
         //
         const domains = await this.listDomains();
         if (domains.length === 0) {

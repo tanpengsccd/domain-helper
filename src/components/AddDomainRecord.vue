@@ -170,7 +170,7 @@ const handleOk = () => {
             <a-form-item label="MX优先级" v-if="form.RecordType === 'MX'">
                 <a-input-number style="width: 100%" v-model:value="form.MX" :placeholder="`MX优先级 范围 [${domainInfo.cloud_info.mx.min}, ${domainInfo.cloud_info.mx.max}]，越小优先级越高`" :min="domainInfo.cloud_info.mx.min" :max="domainInfo.cloud_info.mx.max"/>
             </a-form-item>
-            <a-form-item label="　　备注" v-if="!['aws', 'west', 'spaceship'].includes(domainInfo.cloud)">
+            <a-form-item label="　　备注" v-if="!['aws', 'west', 'spaceship', 'ucloud'].includes(domainInfo.cloud)">
                 <a-input v-model:value="form.Remark" placeholder="备注"></a-input>
             </a-form-item>
             <a-form-item label="开启代理" v-if="domainInfo.cloud === 'cloudflare'">
