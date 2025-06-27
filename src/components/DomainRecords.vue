@@ -139,6 +139,7 @@ const refreshRecords = () => {
     dbsService
         .listRecords(nowDomainInfo.value.domain)
         .then((r) => {
+            console.log(r);
             count.value = r.count;
             //records.value = r.list
 
@@ -173,6 +174,7 @@ const refreshRecords = () => {
             });
         })
         .catch((e) => {
+            console.log(e)
             notification.error({
                 message: "获取解析记录失败",
                 description: e.toString(),

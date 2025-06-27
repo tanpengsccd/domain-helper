@@ -80,12 +80,18 @@ class UcloudDnsService {
     }
 
     async listRecords(domain) {
-        const data = await this._ucloudRest('POST', "UdnrDomainDNSQuery", {
+        const {Data} = await this._ucloudRest('POST', "UdnrDomainDNSQuery", {
             "Dn": domain
         });
+        if (Data === null) {
+            return {
+                count: 0,
+                list: []
+            }
+        }
         return {
-            count: data.Data ? data.Data.length : 0,
-            list: data.Data.map(item => {
+            count:  Data.length,
+            list: Data.map(item => {
                 // 解析记录清空 域名
                 item.RecordName = item.RecordName.replace(`.${domain}`, "");
                 return {
